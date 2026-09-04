@@ -15,5 +15,12 @@
   "packageManager": "pnpm@9.1.0",
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "bcrypt",
+      "@prisma/client"
+    ]
   }
 }

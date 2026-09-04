@@ -21,6 +21,12 @@ veyra/
 - pnpm (`npm install -g pnpm`)
 - PostgreSQL (Local or Docker)
 
+## Environment Variables
+Ensure the following variables are set in `.env`:
+- `DATABASE_URL`: PostgreSQL connection string.
+- `JWT_SECRET`: Secret key for JWT signing.
+- `JWT_EXPIRES_IN`: Expiration time for JWT (e.g. `7d`).
+
 ## Setup Instructions
 1. **Install Dependencies**
    ```bash
@@ -51,6 +57,15 @@ veyra/
    cd backend/database
    npx prisma studio
    ```
+
+## Authentication Endpoints
+- `POST /auth/register`: Register a new user (`email`, `password`). Returns user `id` and `email`.
+- `POST /auth/login`: Login user. Returns `accessToken` and user information.
+- `GET /auth/me`: Get the currently authenticated user (Requires Bearer token).
+
+## Profile & Onboarding Endpoints
+- `GET /profile`: Fetch the authenticated user's profile. Returns `profile`, `isComplete` boolean, and calculated `bmi` (Requires Bearer token).
+- `PUT /profile`: Create or update the authenticated user's profile. Only accepts strictly validated fields from the database schema (Requires Bearer token).
 
 ## Testing Health Endpoint
 After starting the dev servers, visit:
