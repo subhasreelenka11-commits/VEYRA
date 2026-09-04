@@ -69,14 +69,13 @@ export default function Login() {
             </p>
           </div>
         </div>
-
       </div>
 
       {/* Right Column: Authentication Form */}
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 xl:px-28 py-12 bg-[#F8F5F0]">
         <div className="mx-auto w-full max-w-md">
           {/* Mobile Brand Link */}
-          <div className="mb-8 lg:hidden text-center">
+          <div className="mb-8 flex justify-center">
             <Link href="/" className="text-3xl font-serif font-bold tracking-tight text-[#1F1916]">
               VEYRA
             </Link>
