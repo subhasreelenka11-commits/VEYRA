@@ -9,7 +9,7 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get()
-  async getProfile(@Request() req: any) {
+  async getProfile(@Request() req: any): Promise<any> {
     return this.profileService.getProfile(req.user.userId);
   }
 
@@ -17,7 +17,7 @@ export class ProfileController {
   async updateProfile(
     @Request() req: any,
     @Body() updateProfileDto: UpdateProfileDto,
-  ) {
+  ): Promise<any> {
     return this.profileService.upsertProfile(req.user.userId, updateProfileDto);
   }
 }

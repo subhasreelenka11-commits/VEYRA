@@ -6,7 +6,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 export class ProfileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<any> {
     const profile = await this.prisma.userProfile.findUnique({
       where: { userId },
     });
@@ -14,7 +14,7 @@ export class ProfileService {
     return this.formatProfileResponse(profile);
   }
 
-  async upsertProfile(userId: string, dto: UpdateProfileDto) {
+  async upsertProfile(userId: string, dto: UpdateProfileDto): Promise<any> {
     const profile = await this.prisma.userProfile.upsert({
       where: { userId },
       update: dto,

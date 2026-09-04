@@ -70,7 +70,7 @@ export class AuthService {
     };
   }
 
-  async getCurrentUser(userId: string) {
+  async getCurrentUser(userId: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {

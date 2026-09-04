@@ -20,7 +20,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getCurrentUser(@Request() req: any) {
+  async getCurrentUser(@Request() req: any): Promise<any> {
     // req.user is populated by the JwtStrategy
     return this.authService.getCurrentUser(req.user.userId);
   }
