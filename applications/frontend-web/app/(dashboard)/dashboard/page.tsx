@@ -76,7 +76,7 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {greeting()}, {firstName}.
+          {greeting()}, {firstName} 👋
         </h1>
         <p className="text-gray-500 text-lg">Let's take care of you today.</p>
       </section>
@@ -141,13 +141,14 @@ export default function Dashboard() {
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'Analyze My Skin', bg: 'bg-rose-50', text: 'text-rose-700' },
-            { name: 'Build My Routine', bg: 'bg-blue-50', text: 'text-blue-700' },
-            { name: 'Plan My Meals', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-            { name: 'Find a Recipe', bg: 'bg-amber-50', text: 'text-amber-700' },
+            { name: '✨ Skin Analysis', bg: 'bg-rose-50', text: 'text-rose-700' },
+            { name: '🧴 Routine', bg: 'bg-blue-50', text: 'text-blue-700' },
+            { name: '🍽 Meals', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+            { name: '🍳 Recipes', bg: 'bg-amber-50', text: 'text-amber-700' },
           ].map((action) => (
-            <button key={action.name} className={`${action.bg} ${action.text} p-4 rounded-xl font-medium transition-transform hover:scale-105 shadow-sm text-sm sm:text-base`}>
-              {action.name}
+            <button key={action.name} className={`${action.bg} ${action.text} p-4 rounded-xl font-medium transition-transform hover:scale-105 shadow-sm text-sm sm:text-base flex flex-col items-center justify-center text-center gap-2`}>
+              <span>{action.name.split(' ')[0]}</span>
+              <span>{action.name.substring(action.name.indexOf(' ') + 1)}</span>
             </button>
           ))}
         </div>

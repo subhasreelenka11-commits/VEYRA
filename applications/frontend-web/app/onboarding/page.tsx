@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
 import { fetchApi } from '../lib/api';
 import Link from 'next/link';
 
 export default function Onboarding() {
   const { refreshUser } = useAuth();
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 3;
 
@@ -19,11 +21,11 @@ export default function Onboarding() {
     weight: '',
     activityLevel: 'SEDENTARY',
     goal: 'MAINTENANCE',
-    dietaryPreference: 'NONE',
+    dietaryPreference: 'NON_VEGETARIAN',
     allergies: '',
     dislikes: '',
-    budget: 'MEDIUM',
-    cookingTime: 'MEDIUM',
+    budget: '50',
+    cookingTime: '30',
   });
   
   const [error, setError] = useState('');
@@ -70,6 +72,8 @@ export default function Onboarding() {
         age: parseInt(formData.age),
         height: parseFloat(formData.height),
         weight: parseFloat(formData.weight),
+        budget: parseFloat(formData.budget),
+        cookingTime: parseInt(formData.cookingTime),
         allergies: formData.allergies ? formData.allergies.split(',').map(s => s.trim()) : [],
         dislikes: formData.dislikes ? formData.dislikes.split(',').map(s => s.trim()) : [],
       };
@@ -80,6 +84,7 @@ export default function Onboarding() {
       });
 
       await refreshUser();
+      router.push('/dashboard');
     } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(err.message || 'Failed to save profile');
       setLoading(false);
@@ -180,19 +185,19 @@ export default function Onboarding() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Activity Level</label>
                   <select name="activityLevel" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.activityLevel} onChange={handleChange}>
                     <option value="SEDENTARY">Sedentary (Little to no exercise)</option>
-                    <option value="LIGHTLY_ACTIVE">Lightly Active (1-3 days/week)</option>
-                    <option value="MODERATELY_ACTIVE">Moderately Active (3-5 days/week)</option>
-                    <option value="VERY_ACTIVE">Very Active (6-7 days/week)</option>
-                    <option value="EXTRA_ACTIVE">Extra Active (Physical job + training)</option>
+                    <option value="LIGHT">Light (1-3 days/week)</option>
+                    <option value="MODERATE">Moderate (3-5 days/week)</option>
+                    <option value="ACTIVE">Active (6-7 days/week)</option>
+                    <option value="VERY_ACTIVE">Very Active (Physical job + training)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Primary Goal</label>
                   <select name="goal" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.goal} onChange={handleChange}>
                     <option value="WEIGHT_LOSS">Weight Loss</option>
-                    <option value="MAINTENANCE">Maintenance / General Wellness</option>
-                    <option value="MUSCLE_GAIN">Muscle Gain</option>
-                    <option value="GENERAL_HEALTH">General Health</option>
+                    <option value="MAINTENANCE">Maintenance</option>
+                    <option value="WEIGHT_GAIN">Weight Gain / Muscle</option>
+                    <option value="GENERAL_WELLNESS">General Wellness</option>
                   </select>
                 </div>
               </div>
@@ -205,33 +210,22 @@ export default function Onboarding() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Preference</label>
                 <select name="dietaryPreference" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.dietaryPreference} onChange={handleChange}>
-                  <option value="NONE">No specific preference</option>
+                  <option value="NON_VEGETARIAN">Non-Vegetarian</option>
                   <option value="VEGETARIAN">Vegetarian</option>
                   <option value="VEGAN">Vegan</option>
-                  <option value="PESCATARIAN">Pescatarian</option>
-                  <option value="KETO">Keto</option>
-                  <option value="PALEO">Paleo</option>
-                  <option value="HALAL">Halal</option>
-                  <option value="KOSHER">Kosher</option>
+                  <option value="EGGETARIAN">Eggetarian</option>
+                  <option value="OTHER">Other</option>
                 </select>
               </div>
               
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Meal Budget</label>
-                  <select name="budget" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.budget} onChange={handleChange}>
-                    <option value="LOW">Budget friendly</option>
-                    <option value="MEDIUM">Moderate</option>
-                    <option value="HIGH">Premium</option>
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Meal Budget ($ per day)</label>
+                  <input type="number" name="budget" required min="1" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.budget} onChange={handleChange} placeholder="e.g. 50" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cooking Time</label>
-                  <select name="cookingTime" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.cookingTime} onChange={handleChange}>
-                    <option value="LOW">Quick & easy (&lt; 20 mins)</option>
-                    <option value="MEDIUM">Moderate (20-45 mins)</option>
-                    <option value="HIGH">Elaborate (45+ mins)</option>
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cooking Time (minutes)</label>
+                  <input type="number" name="cookingTime" required min="5" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.cookingTime} onChange={handleChange} placeholder="e.g. 30" />
                 </div>
               </div>
 

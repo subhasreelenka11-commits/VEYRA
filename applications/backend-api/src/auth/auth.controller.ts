@@ -35,6 +35,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getCurrentUser(@Request() req: any): Promise<any> {
+    console.log('--- GET /auth/me ---');
+    console.log('Headers:', req.headers);
+    console.log('Cookies:', req.cookies);
     // req.user is populated by the JwtStrategy
     return this.authService.getCurrentUser(req.user.userId);
   }

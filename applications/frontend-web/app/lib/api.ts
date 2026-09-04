@@ -12,6 +12,7 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
     ...options,
     headers,
     credentials: 'include', // Important for sending/receiving HttpOnly cookies
+    cache: 'no-store',
   });
 
   if (!response.ok) {
