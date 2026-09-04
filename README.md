@@ -70,3 +70,10 @@ Ensure the following variables are set in `.env`:
 ## Testing Health Endpoint
 After starting the dev servers, visit:
 `http://localhost:3000/health` (Assuming NestJS is running on port 3000).
+
+## Frontend Flow & Environment Variables
+- `NEXT_PUBLIC_API_URL`: Should be set in `applications/frontend-web/.env.local`. Defaults to `/api` (which relies on Next.js proxying requests to `localhost:3000`).
+- **Protected Routes**: `/dashboard` and `/onboarding` are protected on the frontend via React Context. Unauthenticated users are redirected to `/login`.
+- **Authentication**: JWT is stored securely as an HttpOnly cookie via backend response. It is not exposed to client JavaScript.
+- **Onboarding UX**: Authenticated users who have not completed their profile are forcefully routed to `/onboarding`. Completed profiles route to `/dashboard`.
+- **Logout**: Reaching the backend logout endpoint clears the cookie, invalidating the session securely.
