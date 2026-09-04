@@ -3,9 +3,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { fetchApi } from '../lib/api';
+import Link from 'next/link';
 
 export default function Onboarding() {
-  const { user, refreshUser } = useAuth();
+  const { refreshUser } = useAuth();
+  const [step, setStep] = useState(1);
+  const totalSteps = 3;
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -32,8 +36,31 @@ export default function Onboarding() {
     }));
   };
 
+  const nextStep = () => {
+    if (step === 1 && (!formData.firstName || !formData.lastName || !formData.age)) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+    if (step === 2 && (!formData.height || !formData.weight)) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+    setError('');
+    setStep(prev => Math.min(prev + 1, totalSteps));
+  };
+
+  const prevStep = () => {
+    setError('');
+    setStep(prev => Math.max(prev - 1, 1));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (step !== totalSteps) {
+      nextStep();
+      return;
+    }
+    
     setError('');
     setLoading(true);
 
@@ -60,91 +87,125 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Complete Your Profile</h2>
-        <p className="text-gray-500 mb-8">We need a little more information to personalize your Veyra experience.</p>
+    <div className="min-h-screen bg-[#FAF9F6] font-sans text-gray-900 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+      {/* Header */}
+      <div className="w-full max-w-2xl text-center mb-12">
+        <Link href="/" className="text-3xl font-bold tracking-tight text-gray-900">
+          VEYRA
+        </Link>
+      </div>
+
+      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-sm border border-gray-100 p-8 sm:p-12">
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Let's get to know you.</h2>
+          <p className="text-gray-500">Tell us a little about yourself so Veyra can personalize your experience.</p>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="mb-12">
+          <div className="flex justify-between items-center relative">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full z-0"></div>
+            <div 
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gray-900 rounded-full z-0 transition-all duration-300"
+              style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }}
+            ></div>
+            
+            {[1, 2, 3].map((num) => (
+              <div 
+                key={num} 
+                className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors border-2 
+                  ${step >= num ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-200 text-gray-400'}`}
+              >
+                {num}
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-3 text-xs font-medium text-gray-400">
+            <span className={step >= 1 ? 'text-gray-900' : ''}>About You</span>
+            <span className={step >= 2 ? 'text-gray-900' : ''}>Body & Goals</span>
+            <span className={step >= 3 ? 'text-gray-900' : ''}>Food & Lifestyle</span>
+          </div>
+        </div>
         
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-6 text-sm">{error}</div>}
+        {error && <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-8 text-sm border border-red-100">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Personal Information */}
-          <section>
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Personal Information</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">First Name</label>
-                <input type="text" name="firstName" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.firstName} onChange={handleChange} />
+          
+          {/* STEP 1: About You */}
+          {step === 1 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                  <input type="text" name="firstName" required className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.firstName} onChange={handleChange} placeholder="First Name" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                  <input type="text" name="lastName" required className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.lastName} onChange={handleChange} placeholder="Last Name" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                <input type="text" name="lastName" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.lastName} onChange={handleChange} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Age</label>
-                <input type="number" name="age" required min="13" max="120" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.age} onChange={handleChange} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Gender</label>
-                <select name="gender" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-white" value={formData.gender} onChange={handleChange}>
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                  <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          {/* Body Information */}
-          <section>
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Body Information</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Height (cm)</label>
-                <input type="number" name="height" required min="50" step="0.1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.height} onChange={handleChange} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Weight (kg)</label>
-                <input type="number" name="weight" required min="20" step="0.1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.weight} onChange={handleChange} />
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                  <input type="number" name="age" required min="13" max="120" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.age} onChange={handleChange} placeholder="e.g. 24" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <select name="gender" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.gender} onChange={handleChange}>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                    <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </section>
+          )}
 
-          {/* Lifestyle */}
-          <section>
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Lifestyle</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Activity Level</label>
-                <select name="activityLevel" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-white" value={formData.activityLevel} onChange={handleChange}>
-                  <option value="SEDENTARY">Sedentary</option>
-                  <option value="LIGHTLY_ACTIVE">Lightly Active</option>
-                  <option value="MODERATELY_ACTIVE">Moderately Active</option>
-                  <option value="VERY_ACTIVE">Very Active</option>
-                  <option value="EXTRA_ACTIVE">Extra Active</option>
-                </select>
+          {/* STEP 2: Body & Goals */}
+          {step === 2 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Height (cm)</label>
+                  <input type="number" name="height" required min="50" step="0.1" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.height} onChange={handleChange} placeholder="e.g. 165" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+                  <input type="number" name="weight" required min="20" step="0.1" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.weight} onChange={handleChange} placeholder="e.g. 60" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Goal</label>
-                <select name="goal" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-white" value={formData.goal} onChange={handleChange}>
-                  <option value="WEIGHT_LOSS">Weight Loss</option>
-                  <option value="MAINTENANCE">Maintenance</option>
-                  <option value="MUSCLE_GAIN">Muscle Gain</option>
-                  <option value="GENERAL_HEALTH">General Health</option>
-                </select>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Activity Level</label>
+                  <select name="activityLevel" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.activityLevel} onChange={handleChange}>
+                    <option value="SEDENTARY">Sedentary (Little to no exercise)</option>
+                    <option value="LIGHTLY_ACTIVE">Lightly Active (1-3 days/week)</option>
+                    <option value="MODERATELY_ACTIVE">Moderately Active (3-5 days/week)</option>
+                    <option value="VERY_ACTIVE">Very Active (6-7 days/week)</option>
+                    <option value="EXTRA_ACTIVE">Extra Active (Physical job + training)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Primary Goal</label>
+                  <select name="goal" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.goal} onChange={handleChange}>
+                    <option value="WEIGHT_LOSS">Weight Loss</option>
+                    <option value="MAINTENANCE">Maintenance / General Wellness</option>
+                    <option value="MUSCLE_GAIN">Muscle Gain</option>
+                    <option value="GENERAL_HEALTH">General Health</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </section>
+          )}
 
-          {/* Food Preferences */}
-          <section>
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2 mb-4">Food Preferences</h3>
-            <div className="grid grid-cols-1 gap-4">
+          {/* STEP 3: Food & Lifestyle */}
+          {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Dietary Preference</label>
-                <select name="dietaryPreference" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-white" value={formData.dietaryPreference} onChange={handleChange}>
-                  <option value="NONE">None</option>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Preference</label>
+                <select name="dietaryPreference" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.dietaryPreference} onChange={handleChange}>
+                  <option value="NONE">No specific preference</option>
                   <option value="VEGETARIAN">Vegetarian</option>
                   <option value="VEGAN">Vegan</option>
                   <option value="PESCATARIAN">Pescatarian</option>
@@ -154,42 +215,60 @@ export default function Onboarding() {
                   <option value="KOSHER">Kosher</option>
                 </select>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Budget</label>
-                  <select name="budget" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-white" value={formData.budget} onChange={handleChange}>
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Meal Budget</label>
+                  <select name="budget" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.budget} onChange={handleChange}>
+                    <option value="LOW">Budget friendly</option>
+                    <option value="MEDIUM">Moderate</option>
+                    <option value="HIGH">Premium</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Cooking Time</label>
-                  <select name="cookingTime" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 bg-white" value={formData.cookingTime} onChange={handleChange}>
-                    <option value="LOW">Low (Quick)</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High (Elaborate)</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cooking Time</label>
+                  <select name="cookingTime" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.cookingTime} onChange={handleChange}>
+                    <option value="LOW">Quick & easy (&lt; 20 mins)</option>
+                    <option value="MEDIUM">Moderate (20-45 mins)</option>
+                    <option value="HIGH">Elaborate (45+ mins)</option>
                   </select>
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700">Allergies (comma separated)</label>
-                <input type="text" name="allergies" placeholder="e.g. peanuts, shellfish" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.allergies} onChange={handleChange} />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Allergies <span className="text-gray-400 font-normal">(Optional, comma separated)</span></label>
+                <input type="text" name="allergies" placeholder="e.g. peanuts, shellfish" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.allergies} onChange={handleChange} />
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700">Dislikes (comma separated)</label>
-                <input type="text" name="dislikes" placeholder="e.g. mushrooms, eggplant" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2" value={formData.dislikes} onChange={handleChange} />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dislikes <span className="text-gray-400 font-normal">(Optional, comma separated)</span></label>
+                <input type="text" name="dislikes" placeholder="e.g. mushrooms, eggplant" className="block w-full rounded-xl border-gray-200 px-4 py-3 text-gray-900 shadow-sm focus:border-gray-900 focus:ring-gray-900 bg-gray-50/50" value={formData.dislikes} onChange={handleChange} />
               </div>
             </div>
-          </section>
+          )}
 
-          <div className="pt-4 border-t">
+          <div className="pt-8 border-t border-gray-100 flex items-center justify-between">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="px-6 py-3 border border-gray-200 rounded-full text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                Back
+              </button>
+            ) : (
+              <div></div>
+            )}
+            
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto flex justify-center py-2 px-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-8 py-3 rounded-full text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2 ml-auto"
             >
-              {loading ? 'Saving Profile...' : 'Complete Onboarding'}
+              {loading ? 'Saving...' : step === totalSteps ? 'Complete Onboarding' : 'Continue'}
+              {!loading && step < totalSteps && (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              )}
             </button>
           </div>
         </form>

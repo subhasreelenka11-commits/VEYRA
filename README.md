@@ -71,13 +71,9 @@ Ensure the following variables are set in `.env`:
 After starting the dev servers, visit:
 `http://localhost:3000/health` (Assuming NestJS is running on port 3000).
 
-## Frontend Flow & Environment Variables
-- `NEXT_PUBLIC_API_URL`: Should be set in `applications/frontend-web/.env.local`. Defaults to `/api` (which relies on Next.js proxying requests to `localhost:3000`).
-- **Protected Routes**: `/dashboard` and `/onboarding` are protected on the frontend via React Context. Unauthenticated users are redirected to `/login`.
-- **Authentication**: JWT is stored securely as an HttpOnly cookie via backend response. It is not exposed to client JavaScript.
-- **Onboarding UX**: Authenticated users who have not completed their profile are forcefully routed to `/onboarding`. Completed profiles route to `/dashboard`.
-- **Logout**: Reaching the backend logout endpoint clears the cookie, invalidating the session securely.
-
-## Dashboard & Features (Step 6)
-- **`/dashboard`**: The main entry point for authenticated users. Displays personalized greetings, profile summaries, BMI cards, and Quick Actions.
-- **Protected Feature Routes**: Navigating from the sidebar provides access to upcoming modules like `/skin-analysis`, `/grooming`, `/nutrition`, `/recipes`, `/products`, and `/progress`. These are currently placeholder screens laying the foundation for future Veyra capabilities. All these routes are strictly protected and redirect to `/login` if unauthenticated.
+## Frontend Routes & User Flow (Step 6 UI)
+- **`/` (Landing Page)**: The public face of Veyra, showcasing the brand and features.
+- **`/login` & `/register`**: Split-screen, premium authentication flows.
+- **`/onboarding`**: A multi-step form capturing physical and lifestyle data. Forcefully routes here if a logged-in user lacks a complete profile.
+- **`/dashboard`**: The personalized hub. Protected route requiring authentication and completed onboarding.
+- **Placeholder Routes**: `/skin-analysis`, `/grooming`, `/nutrition`, `/recipes`, `/products`, `/progress`, `/profile`, `/settings`. Protected routes currently staged for future development.
