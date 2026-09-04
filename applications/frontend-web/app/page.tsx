@@ -10,8 +10,8 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#F2EDE7] text-[#1F1916] font-sans antialiased selection:bg-[#EADBCE] overflow-x-hidden">
       {/* 1. NAVBAR */}
-      <header className="sticky top-0 z-50 w-full bg-[#F8F5F0]/95 backdrop-blur-md border-b border-[#EADCD4]/40 py-4 px-6 lg:px-12 xl:px-16">
-        <div className="w-full max-w-[1440px] mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full bg-[#F8F5F0]/95 backdrop-blur-md border-b border-[#EADCD4]/40 py-4">
+        <div className="veyra-container flex items-center justify-between">
           <div className="flex items-center gap-12">
             <Link href="/" className="text-2xl font-serif tracking-tight font-bold text-[#1F1916]">
               VEYRA
@@ -96,144 +96,146 @@ export default function Home() {
       <main className="flex-grow w-full space-y-16 lg:space-y-24">
         {/* 2. HERO SECTION */}
         <section className="w-full relative overflow-hidden">
-          <div className="w-full grid grid-cols-1 md:grid-cols-12 items-start">
-            {/* Left Hero Column */}
-            <div className="md:col-span-5 space-y-6 z-10 px-6 md:px-10 xl:px-16 pt-8 pb-10 max-w-[1440px]">
-              <div className="inline-block text-[11px] font-bold tracking-widest text-[#6B5A52] uppercase">
-                PERSONALIZED WELLNESS, MADE FOR YOU
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-serif text-[#1F1916] leading-[1.12] tracking-tight">
-                Your personal <br />
-                <span className="italic font-serif font-normal text-[#5C504A]">grooming </span>
-                <span className="font-serif font-normal text-[#334234]">&amp;</span> <br />
-                wellness companion.
-              </h1>
-
-              <p className="text-sm sm:text-base text-[#6B5A52] max-w-lg leading-relaxed">
-                Personalized skincare, grooming, nutrition, and wellness guidance — designed around you.
-              </p>
-
-              <div className="pt-2 flex flex-wrap items-center gap-4">
-                <Link
-                  href="/register"
-                  className="bg-[#334234] text-white px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#253226] transition-all shadow-md inline-flex items-center gap-2"
-                >
-                  Get Started →
-                </Link>
-                <Link
-                  href="#features"
-                  className="bg-white text-[#1F1916] border border-[#334234]/40 px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#FAF4EE] transition-all"
-                >
-                  Explore VEYRA
-                </Link>
-              </div>
-
-              {/* Social Proof */}
-              <div className="pt-4 flex items-center gap-3">
-                <div className="flex -space-x-2 overflow-hidden">
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#8C6D58] text-white flex items-center justify-center text-[10px] font-bold">
-                    S
-                  </div>
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#708264] text-white flex items-center justify-center text-[10px] font-bold">
-                    M
-                  </div>
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#4A3E3D] text-white flex items-center justify-center text-[10px] font-bold">
-                    A
-                  </div>
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#B0937A] text-white flex items-center justify-center text-[10px] font-bold">
-                    R
-                  </div>
+          <div className="veyra-container pt-8 pb-10">
+            <div className="grid grid-cols-1 md:grid-cols-12 items-start gap-8">
+              {/* Left Hero Column */}
+              <div className="md:col-span-5 space-y-6 z-10">
+                <div className="inline-block text-[11px] font-bold tracking-widest text-[#6B5A52] uppercase">
+                  PERSONALIZED WELLNESS, MADE FOR YOU
                 </div>
-                <div>
-                  <div className="flex items-center text-amber-600 text-xs gap-1">
-                    ★★★★★
-                  </div>
-                  <p className="text-[11px] text-[#6B5A52] font-medium">
-                    Trusted by 10,000+ users
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            {/* Right Hero Column — Arched image matching reference */}
-            <div className="md:col-span-7 relative h-[540px] md:h-[620px] lg:h-[680px] flex justify-end">
-              <div className="relative w-full h-full rounded-tl-[260px] overflow-hidden">
-                <Image
-                  src="/images/veyra_hero_silk_robe.png"
-                  alt="Veyra Personal Grooming & Wellness Model"
-                  fill
-                  className="object-cover object-top"
-                  priority
-                />
-              </div>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-serif text-[#1F1916] leading-[1.12] tracking-tight">
+                  Your personal <br />
+                  <span className="italic font-serif font-normal text-[#5C504A]">grooming </span>
+                  <span className="font-serif font-normal text-[#334234]">&amp;</span> <br />
+                  wellness companion.
+                </h1>
 
-              {/* Botanical leaf overlay */}
-              <div className="absolute -bottom-4 right-4 z-30 pointer-events-none text-6xl select-none">🌿</div>
+                <p className="text-sm sm:text-base text-[#6B5A52] max-w-lg leading-relaxed">
+                  Personalized skincare, grooming, nutrition, and wellness guidance — designed around you.
+                </p>
 
-              {/* Floating Badge 1: Personalized for you — center-left over image */}
-              <div className="absolute bottom-16 left-6 bg-[#FAF7F2]/96 backdrop-blur-md p-4 rounded-2xl border border-[#E8DCD2] shadow-2xl z-20 min-w-[230px]">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-amber-800 text-sm">🌱</span>
-                  <span className="text-xs font-bold text-[#1F1916]">Personalized for you</span>
+                <div className="pt-2 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/register"
+                    className="bg-[#334234] text-white px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#253226] transition-all shadow-md inline-flex items-center gap-2"
+                  >
+                    Get Started →
+                  </Link>
+                  <Link
+                    href="#features"
+                    className="bg-white text-[#1F1916] border border-[#334234]/40 px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#FAF4EE] transition-all"
+                  >
+                    Explore VEYRA
+                  </Link>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center border-t border-[#E8DCD2]/60 pt-3">
-                  <div className="flex flex-col items-center gap-1 border-r border-[#E8DCD2]">
-                    <span className="text-base">💧</span>
-                    <span className="text-[10px] font-bold text-[#5C504A]">Skin</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1 border-r border-[#E8DCD2]">
-                    <span className="text-base">🥗</span>
-                    <span className="text-[10px] font-bold text-[#5C504A]">Nutrition</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-base">🧘</span>
-                    <span className="text-[10px] font-bold text-[#5C504A]">Wellness</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Floating Badge 2: Your morning routine */}
-              <div className="absolute top-8 right-4 sm:right-8 bg-[#FAF7F2]/95 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-[#E8DCD2] shadow-2xl z-20 min-w-[210px] sm:min-w-[240px] space-y-3">
-                <div className="flex items-center justify-between border-b border-[#E8DCD2]/60 pb-2">
-                  <span className="text-xs font-bold text-[#1F1916]">Your morning routine</span>
-                  <span className="text-amber-600 text-xs">☀️</span>
-                </div>
-                <ul className="text-[11px] text-[#5C504A] space-y-2 font-medium">
-                  <li className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
-                      <span>Hydration</span>
+                {/* Social Proof */}
+                <div className="pt-4 flex items-center gap-3">
+                  <div className="flex -space-x-2 overflow-hidden">
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#8C6D58] text-white flex items-center justify-center text-[10px] font-bold">
+                      S
                     </div>
-                    <span className="text-[10px] text-gray-400">Done</span>
-                  </li>
-                  <li className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
-                      <span>Skincare</span>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#708264] text-white flex items-center justify-center text-[10px] font-bold">
+                      M
                     </div>
-                    <span className="text-[10px] text-gray-400">Done</span>
-                  </li>
-                  <li className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
-                      <span>Breakfast</span>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#4A3E3D] text-white flex items-center justify-center text-[10px] font-bold">
+                      A
                     </div>
-                    <span className="text-[10px] text-gray-400">Done</span>
-                  </li>
-                  <li className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
-                      <span>Movement</span>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-[#F8F5F0] bg-[#B0937A] text-white flex items-center justify-center text-[10px] font-bold">
+                      R
                     </div>
-                    <span className="text-[10px] text-[#708264] font-semibold">20 min</span>
-                  </li>
-                </ul>
+                  </div>
+                  <div>
+                    <div className="flex items-center text-amber-600 text-xs gap-1">
+                      ★★★★★
+                    </div>
+                    <p className="text-[11px] text-[#6B5A52] font-medium">
+                      Trusted by 10,000+ users
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Botanical Leaf Overlay Branch */}
-              <div className="absolute -bottom-8 -right-6 z-30 pointer-events-none text-5xl">
-                🌿
+              {/* Right Hero Column — Arched image matching reference */}
+              <div className="md:col-span-7 relative h-[540px] md:h-[620px] lg:h-[680px] flex justify-end">
+                <div className="relative w-full h-full rounded-tl-[260px] overflow-hidden">
+                  <Image
+                    src="/images/veyra_hero_silk_robe.png"
+                    alt="Veyra Personal Grooming & Wellness Model"
+                    fill
+                    className="object-cover object-top"
+                    priority
+                  />
+                </div>
+
+                {/* Botanical leaf overlay */}
+                <div className="absolute -bottom-4 right-4 z-30 pointer-events-none text-6xl select-none">🌿</div>
+
+                {/* Floating Badge 1: Personalized for you — center-left over image */}
+                <div className="absolute bottom-16 left-6 bg-[#FAF7F2]/96 backdrop-blur-md p-4 rounded-2xl border border-[#E8DCD2] shadow-2xl z-20 min-w-[230px]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-amber-800 text-sm">🌱</span>
+                    <span className="text-xs font-bold text-[#1F1916]">Personalized for you</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center border-t border-[#E8DCD2]/60 pt-3">
+                    <div className="flex flex-col items-center gap-1 border-r border-[#E8DCD2]">
+                      <span className="text-base">💧</span>
+                      <span className="text-[10px] font-bold text-[#5C504A]">Skin</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1 border-r border-[#E8DCD2]">
+                      <span className="text-base">🥗</span>
+                      <span className="text-[10px] font-bold text-[#5C504A]">Nutrition</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-base">🧘</span>
+                      <span className="text-[10px] font-bold text-[#5C504A]">Wellness</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Badge 2: Your morning routine */}
+                <div className="absolute top-8 right-4 sm:right-8 bg-[#FAF7F2]/95 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-[#E8DCD2] shadow-2xl z-20 min-w-[210px] sm:min-w-[240px] space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#E8DCD2]/60 pb-2">
+                    <span className="text-xs font-bold text-[#1F1916]">Your morning routine</span>
+                    <span className="text-amber-600 text-xs">☀️</span>
+                  </div>
+                  <ul className="text-[11px] text-[#5C504A] space-y-2 font-medium">
+                    <li className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                        <span>Hydration</span>
+                      </div>
+                      <span className="text-[10px] text-gray-400">Done</span>
+                    </li>
+                    <li className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                        <span>Skincare</span>
+                      </div>
+                      <span className="text-[10px] text-gray-400">Done</span>
+                    </li>
+                    <li className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                        <span>Breakfast</span>
+                      </div>
+                      <span className="text-[10px] text-gray-400">Done</span>
+                    </li>
+                    <li className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-4 h-4 rounded-full bg-[#708264] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                        <span>Movement</span>
+                      </div>
+                      <span className="text-[10px] text-[#708264] font-semibold">20 min</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Botanical Leaf Overlay Branch */}
+                <div className="absolute -bottom-8 -right-6 z-30 pointer-events-none text-5xl">
+                  🌿
+                </div>
               </div>
             </div>
           </div>
@@ -267,21 +269,21 @@ export default function Home() {
         </section>
 
         {/* 4. BENTO GRID FEATURES SECTION */}
-        <section id="features" className="w-full px-6 lg:px-12 xl:px-16 space-y-6">
-          <div className="w-full max-w-[1440px] mx-auto space-y-6">
+        <section id="features" className="w-full">
+          <div className="veyra-container space-y-6">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-[#1F1916] tracking-tight">
               Everything you need to take better care of yourself.
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
               {/* Left AI Skin Analysis Card */}
-              <div className="md:col-span-5 bg-[#EFE7E0] p-8 sm:p-10 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between space-y-8">
-                <div className="space-y-4">
+              <div className="lg:col-span-5 bg-[#EFE7E0] p-6 sm:p-8 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between space-y-6 overflow-hidden">
+                <div className="space-y-3">
                   <span className="inline-block px-3 py-1 rounded-full bg-white/80 text-[10px] font-extrabold tracking-widest text-[#334234] uppercase border border-[#E2D4C8]">
                     AI POWERED
                   </span>
                   <h3 className="text-2xl sm:text-3xl font-serif text-[#1F1916]">AI Skin Analysis</h3>
-                  <p className="text-xs sm:text-sm text-[#6B5A52] leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#6B5A52] leading-relaxed max-w-xs">
                     Understand your skin and get personalized guidance with AI.
                   </p>
                   <Link href="/register" className="inline-block text-xs font-bold text-[#1F1916] hover:underline">
@@ -289,13 +291,14 @@ export default function Home() {
                   </Link>
                 </div>
 
-                {/* Phone Graphic Mock Card */}
-                <div className="bg-white p-6 rounded-2xl border border-[#E2D4C8] shadow-sm space-y-4 max-w-[260px] mx-auto text-center">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">Skin Health Score</p>
-                  <div className="w-20 h-20 rounded-full border-4 border-[#334234] flex items-center justify-center text-2xl font-bold text-[#1F1916] mx-auto">
+                {/* Phone Mockup Graphic */}
+                <div className="bg-white p-5 rounded-[24px] border-4 border-gray-200 shadow-md space-y-3 max-w-[210px] mx-auto text-center shrink-0">
+                  <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto" />
+                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Skin Health Score</p>
+                  <div className="w-16 h-16 rounded-full border-4 border-[#334234] flex items-center justify-center text-xl font-bold text-[#1F1916] mx-auto">
                     82
                   </div>
-                  <div className="text-[11px] space-y-1.5 text-left pt-2 border-t border-gray-100">
+                  <div className="text-[10px] space-y-1 text-left pt-2 border-t border-gray-100">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Hydration</span>
                       <span className="font-bold text-emerald-700">Good</span>
@@ -317,88 +320,124 @@ export default function Home() {
               </div>
 
               {/* Right Side Bento Grid Stack */}
-              <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Card 1: Personalized Routines */}
-                <div className="bg-[#EFE7E0] p-6 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-serif text-[#1F1916]">Personalized Routines</h4>
-                    <p className="text-xs text-[#6B5A52] leading-relaxed">
-                      Build skincare and grooming routines that fit your needs.
-                    </p>
-                    <Link href="/register" className="inline-block text-xs font-bold text-[#1F1916] hover:underline">
-                      Learn more →
-                    </Link>
+              <div className="lg:col-span-7 flex flex-col gap-4">
+                {/* Top row: 2 horizontal cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Card 1: Personalized Routines */}
+                  <div className="bg-[#EFE7E0] p-5 rounded-3xl border border-[#E2D4C8] flex flex-row items-center justify-between gap-3 overflow-hidden">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <h4 className="text-sm font-serif font-bold text-[#1F1916]">Personalized Routines</h4>
+                      <p className="text-[11px] text-[#6B5A52] leading-relaxed">
+                        Build skincare and grooming routines that fit your needs.
+                      </p>
+                      <Link href="/register" className="inline-block text-[11px] font-bold text-[#1F1916] hover:underline">
+                        Learn more →
+                      </Link>
+                    </div>
+                    <div className="relative w-[95px] h-[75px] rounded-2xl overflow-hidden shrink-0 border border-[#E2D4C8]">
+                      <Image
+                        src="/images/veyra_bento_products.png"
+                        alt="Personalized Routines"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
-                  <div className="relative h-[130px] rounded-xl overflow-hidden border border-[#E2D4C8]">
-                    <Image
-                      src="/images/veyra_bento_products.png"
-                      alt="Personalized Routines Products"
-                      fill
-                      className="object-cover"
-                    />
+
+                  {/* Card 2: Nutrition */}
+                  <div className="bg-[#EFE7E0] p-5 rounded-3xl border border-[#E2D4C8] flex flex-row items-center justify-between gap-3 overflow-hidden">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <h4 className="text-sm font-serif font-bold text-[#1F1916]">Nutrition</h4>
+                      <p className="text-[11px] text-[#6B5A52] leading-relaxed">
+                        Get meal ideas personalized to your goals and preferences.
+                      </p>
+                      <Link href="/register" className="inline-block text-[11px] font-bold text-[#1F1916] hover:underline">
+                        Learn more →
+                      </Link>
+                    </div>
+                    <div className="relative w-[75px] h-[75px] rounded-full overflow-hidden shrink-0 border border-[#E2D4C8]">
+                      <Image
+                        src="/images/veyra_bento_nutrition.png"
+                        alt="Nutrition"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Card 2: Nutrition */}
-                <div className="bg-[#EFE7E0] p-6 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-serif text-[#1F1916]">Nutrition</h4>
-                    <p className="text-xs text-[#6B5A52] leading-relaxed">
-                      Get meal ideas personalized to your goals and preferences.
-                    </p>
-                    <Link href="/register" className="inline-block text-xs font-bold text-[#1F1916] hover:underline">
-                      Learn more →
-                    </Link>
+                {/* Bottom row: 3 cards matching reference */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+                  {/* Card 3: Smart Recipes */}
+                  <div className="bg-[#EFE7E0] p-4 sm:p-5 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between gap-3 overflow-hidden">
+                    <div className="space-y-1">
+                      <h4 className="text-xs sm:text-sm font-serif font-bold text-[#1F1916]">Smart Recipes</h4>
+                      <p className="text-[10px] sm:text-[11px] text-[#6B5A52] leading-relaxed">
+                        Discover recipes based on your preferences and what's available.
+                      </p>
+                      <Link href="/register" className="inline-block text-[10px] sm:text-[11px] font-bold text-[#1F1916] hover:underline">
+                        Learn more →
+                      </Link>
+                    </div>
+                    <div className="relative w-full h-[70px] rounded-2xl overflow-hidden shrink-0 border border-[#E2D4C8]">
+                      <Image
+                        src="/images/veyra_bento_nutrition.png"
+                        alt="Smart Recipes"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
-                  <div className="relative h-[130px] rounded-xl overflow-hidden border border-[#E2D4C8]">
-                    <Image
-                      src="/images/veyra_bento_nutrition.png"
-                      alt="Healthy Nutrition Meal"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
 
-                {/* Card 3: Smart Recipes */}
-                <div className="bg-[#EFE7E0] p-6 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-serif text-[#1F1916]">Smart Recipes</h4>
-                    <p className="text-xs text-[#6B5A52] leading-relaxed">
-                      Discover recipes based on your preferences and what's available.
-                    </p>
-                    <Link href="/register" className="inline-block text-xs font-bold text-[#1F1916] hover:underline">
-                      Learn more →
-                    </Link>
+                  {/* Card 4: Product Recommendations */}
+                  <div className="bg-[#EFE7E0] p-4 sm:p-5 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between gap-3 overflow-hidden">
+                    <div className="space-y-1">
+                      <h4 className="text-xs sm:text-sm font-serif font-bold text-[#1F1916]">Product Recommendations</h4>
+                      <p className="text-[10px] sm:text-[11px] text-[#6B5A52] leading-relaxed">
+                        Find products that match your needs and budget.
+                      </p>
+                      <Link href="/register" className="inline-block text-[10px] sm:text-[11px] font-bold text-[#1F1916] hover:underline">
+                        Learn more →
+                      </Link>
+                    </div>
+                    <div className="relative w-full h-[70px] rounded-2xl overflow-hidden shrink-0 border border-[#E2D4C8]">
+                      <Image
+                        src="/images/veyra_bento_products.png"
+                        alt="Product Recommendations"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
-                  <div className="relative h-[130px] rounded-xl overflow-hidden border border-[#E2D4C8]">
-                    <Image
-                      src="/images/veyra_bento_nutrition.png"
-                      alt="Smart Recipes Plated Meal"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
 
-                {/* Card 4: Progress Tracking */}
-                <div className="bg-[#EFE7E0] p-6 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-serif text-[#1F1916]">Progress Tracking</h4>
-                    <p className="text-xs text-[#6B5A52] leading-relaxed">
-                      Track your wellness and personal progress over time effortlessly.
-                    </p>
-                    <Link href="/register" className="inline-block text-xs font-bold text-[#1F1916] hover:underline">
-                      Learn more →
-                    </Link>
-                  </div>
-                  <div className="relative h-[130px] rounded-xl overflow-hidden border border-[#E2D4C8]">
-                    <Image
-                      src="/images/veyra_bento_products.png"
-                      alt="Product Recommendations"
-                      fill
-                      className="object-cover"
-                    />
+                  {/* Card 5: Progress Tracking */}
+                  <div className="bg-[#EFE7E0] p-4 sm:p-5 rounded-3xl border border-[#E2D4C8] flex flex-col justify-between gap-3 overflow-hidden">
+                    <div className="space-y-1">
+                      <h4 className="text-xs sm:text-sm font-serif font-bold text-[#1F1916]">Progress Tracking</h4>
+                      <p className="text-[10px] sm:text-[11px] text-[#6B5A52] leading-relaxed">
+                        Track your wellness and personal progress over time effortlessly.
+                      </p>
+                      <Link href="/register" className="inline-block text-[10px] sm:text-[11px] font-bold text-[#1F1916] hover:underline">
+                        Learn more →
+                      </Link>
+                    </div>
+                    {/* Mini chart card */}
+                    <div className="bg-white/80 rounded-2xl p-2.5 border border-[#E2D4C8] space-y-1">
+                      <div className="flex justify-between items-center text-[8px] text-gray-400 font-bold uppercase">
+                        <span>This week</span>
+                        <span className="text-emerald-700">↗ +12%</span>
+                      </div>
+                      <svg viewBox="0 0 100 28" className="w-full h-6">
+                        <polyline
+                          points="0,22 18,18 36,20 54,10 72,12 100,4"
+                          fill="none"
+                          stroke="#334234"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>

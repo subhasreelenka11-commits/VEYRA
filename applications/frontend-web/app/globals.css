@@ -23,8 +23,18 @@ body {
   width: 100%;
 }
 
+@layer components {
+  .veyra-container {
+    @apply w-full max-w-[1440px] mx-auto px-6 lg:px-12 xl:px-16;
+  }
+  .veyra-section-padding {
+    @apply px-6 lg:px-12 xl:px-16;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 }
+
