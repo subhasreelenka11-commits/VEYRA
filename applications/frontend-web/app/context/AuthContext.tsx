@@ -71,13 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (loading) return;
 
     const isAuthRoute = pathname === '/login' || pathname === '/register';
-    const isProtectedRoute = pathname === '/dashboard' || pathname === '/onboarding';
+    
+    const protectedRoutes = [
+      '/dashboard', '/skin-analysis', '/grooming', '/nutrition', 
+      '/recipes', '/products', '/progress', '/profile', '/settings', '/onboarding'
+    ];
+    
+    const isProtectedRoute = protectedRoutes.includes(pathname);
 
     if (!user && isProtectedRoute) {
       router.push('/login');
     } else if (user && isAuthRoute) {
       router.push(profileComplete ? '/dashboard' : '/onboarding');
-    } else if (user && pathname === '/dashboard' && !profileComplete) {
+    } else if (user && isProtectedRoute && pathname !== '/onboarding' && !profileComplete) {
       router.push('/onboarding');
     }
   }, [user, loading, pathname, profileComplete, router]);

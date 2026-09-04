@@ -77,3 +77,7 @@ After starting the dev servers, visit:
 - **Authentication**: JWT is stored securely as an HttpOnly cookie via backend response. It is not exposed to client JavaScript.
 - **Onboarding UX**: Authenticated users who have not completed their profile are forcefully routed to `/onboarding`. Completed profiles route to `/dashboard`.
 - **Logout**: Reaching the backend logout endpoint clears the cookie, invalidating the session securely.
+
+## Dashboard & Features (Step 6)
+- **`/dashboard`**: The main entry point for authenticated users. Displays personalized greetings, profile summaries, BMI cards, and Quick Actions.
+- **Protected Feature Routes**: Navigating from the sidebar provides access to upcoming modules like `/skin-analysis`, `/grooming`, `/nutrition`, `/recipes`, `/products`, and `/progress`. These are currently placeholder screens laying the foundation for future Veyra capabilities. All these routes are strictly protected and redirect to `/login` if unauthenticated.
