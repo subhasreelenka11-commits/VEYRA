@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { fetchApi } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,6 +15,7 @@ export default function Register() {
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshUser } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +39,18 @@ export default function Register() {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      router.push('/login');
+
+      // Seamlessly log in newly registered user to jump straight into personalized onboarding
+      try {
+        await fetchApi('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        });
+        await refreshUser();
+        router.push('/onboarding');
+      } catch (loginErr) {
+        router.push('/login?registered=true');
+      }
     } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       setError(err.message || 'Failed to create account. Please try again.');
     } finally {
@@ -88,14 +101,23 @@ export default function Register() {
       {/* Right Column: Registration Form */}
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 xl:px-28 py-12 bg-[#F8F5F0]">
         <div className="mx-auto w-full max-w-md">
-          {/* Mobile Brand Link */}
-          <div className="mb-8 flex justify-center">
-            <Link href="/" className="text-3xl font-serif font-bold tracking-tight text-[#1F1916]">
+          {/* Back to Home & Mobile Brand Link */}
+          <div className="flex items-center justify-between mb-8">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B5A52] hover:text-[#1F1916] transition-colors py-1.5 px-3 rounded-full hover:bg-[#EADBCE]/50 border border-transparent hover:border-[#E8DCD2]"
+            >
+              <span>←</span> Back to home
+            </Link>
+            <Link href="/" className="lg:hidden text-2xl font-serif font-bold tracking-tight text-[#1F1916]">
               VEYRA
             </Link>
           </div>
 
           <div className="space-y-2 mb-8">
+            <div className="inline-block text-[10px] font-bold tracking-widest text-[#708264] uppercase bg-[#E8EFE6] px-3 py-1 rounded-full border border-[#708264]/20">
+              JOIN THE SANCTUARY
+            </div>
             <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#1F1916] tracking-tight">
               Create an account
             </h1>
@@ -228,7 +250,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center py-4 px-6 border border-transparent rounded-full shadow-md text-xs font-bold uppercase tracking-wider text-white bg-[#334234] hover:bg-[#253226] focus:outline-none transition-all disabled:opacity-70 mt-2"
+              className="w-full flex justify-center py-4 px-6 border border-transparent rounded-full shadow-md text-xs font-bold uppercase tracking-wider text-white bg-[#334234] hover:bg-[#253226] focus:outline-none transition-all disabled:opacity-70 mt-2 cursor-pointer"
             >
               {isLoading ? 'Creating account...' : 'Create Account →'}
             </button>

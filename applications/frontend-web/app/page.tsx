@@ -20,7 +20,7 @@ export default function Home() {
               <Link href="#features" className="hover:text-[#1F1916] transition-colors">
                 Features
               </Link>
-              <Link href="#how-it-works" className="hover:text-[#how-it-works] transition-colors">
+              <Link href="#how-it-works" className="hover:text-[#1F1916] transition-colors">
                 How It Works
               </Link>
               <Link href="#about" className="hover:text-[#1F1916] transition-colors">
@@ -805,7 +805,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-12 pt-6 border-t border-[#E2D4C8] flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 gap-4">
-            <p>&copy; 2025 VEYRA. All rights reserved.</p>
+            <p>&copy; 2026 VEYRA. All rights reserved.</p>
             <div className="flex gap-4">
               <Link href="#" className="hover:underline">Privacy Policy</Link>
               <Link href="#" className="hover:underline">Terms of Service</Link>
