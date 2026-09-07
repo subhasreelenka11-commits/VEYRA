@@ -26,6 +26,7 @@ Ensure the following variables are set in `.env`:
 - `DATABASE_URL`: PostgreSQL connection string.
 - `JWT_SECRET`: Secret key for JWT signing.
 - `JWT_EXPIRES_IN`: Expiration time for JWT (e.g. `7d`).
+- `PORT`: Backend port (defaults to `5001`).
 
 ## Setup Instructions
 1. **Install Dependencies**
@@ -69,7 +70,8 @@ Ensure the following variables are set in `.env`:
 
 ## Testing Health Endpoint
 After starting the dev servers, visit:
-`http://localhost:3000/health` (Assuming NestJS is running on port 3000).
+- Directly: `http://localhost:5001/health` (NestJS backend)
+- Or via frontend proxy: `http://localhost:3001/health` or `http://localhost:3001/api/health`
 
 ## Frontend Routes & User Flow (Step 6 UI)
 - **`/` (Landing Page)**: The public face of Veyra, showcasing the brand and features.
