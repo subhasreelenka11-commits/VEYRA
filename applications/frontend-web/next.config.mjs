@@ -40,6 +40,10 @@ const nextConfig = {
         destination: `${backendUrl}/skin-analysis/:path*`,
       },
       {
+        source: '/grooming/:path*',
+        destination: `${backendUrl}/grooming/:path*`,
+      },
+      {
         source: '/health',
         destination: `${backendUrl}/health`,
       },

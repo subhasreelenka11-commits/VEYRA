@@ -221,4 +221,79 @@ Provide exactly 6 metrics matching those names, and 3-4 recommended actives. For
 
     return this.executeWithFallback(payload);
   }
+
+  async generateGroomingRoutine(skinScanData: any, userProfile: any): Promise<any> {
+    const systemPrompt = `You are an elite, AI-powered virtual dermatologist and skincare expert.
+Your task is to generate a highly personalized daily and weekly grooming routine based on the user's latest skin scan and profile.
+
+IMPORTANT INSTRUCTIONS:
+- You must generate three separate routines: "morning", "evening", and "weekly".
+- Each routine should have 2-5 steps.
+- Suggest specific product types and active ingredients based on the skin scan's recommended actives and the user's skin metrics.
+- Take into account the user's profile, including their gender, age, and budget, to tailor the product recommendations.
+- Return ONLY valid JSON. Do not include markdown code blocks.
+
+REQUIRED JSON STRUCTURE:
+{
+  "routineData": {
+    "morning": [
+      {
+        "id": "m1",
+        "stepNumber": "01",
+        "title": "Gentle Hydrating Cleanse",
+        "category": "Cleanse",
+        "description": "Massage onto damp skin...",
+        "duration": "60 sec",
+        "actives": ["Glycerin", "Amino Acids"],
+        "productName": "Botanical Velvet Cleanser",
+        "productType": "Cleanser"
+      }
+    ],
+    "evening": [
+      {
+        "id": "e1",
+        "stepNumber": "01",
+        "title": "Clarifying Oil Pre-Cleanse",
+        "category": "First Cleanse",
+        "description": "Dissolves mineral sunscreen...",
+        "duration": "60 sec",
+        "actives": ["Squalane"],
+        "productName": "Purifying Botanical Cleansing Oil",
+        "productType": "Oil Cleanse"
+      }
+    ],
+    "weekly": [
+      {
+        "id": "w1",
+        "stepNumber": "01",
+        "title": "Papaya Enzyme Gentle Peel",
+        "category": "Exfoliate",
+        "description": "Natural enzymatic non-abrasive treatment...",
+        "duration": "10 min",
+        "actives": ["Papain", "Lactic Acid 5%"],
+        "productName": "Micro-Exfoliating Enzyme Glaze",
+        "productType": "Weekly Mask"
+      }
+    ]
+  }
+}`;
+
+    const userPrompt = `User Profile:
+${JSON.stringify(userProfile, null, 2)}
+
+Latest Skin Scan Metrics:
+${JSON.stringify(skinScanData, null, 2)}
+
+Generate the personalized grooming routine as a JSON object matching the required structure exactly.`;
+
+    const payload = {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      response_format: { type: "json_object" }
+    };
+
+    return this.executeWithFallback(payload);
+  }
 }

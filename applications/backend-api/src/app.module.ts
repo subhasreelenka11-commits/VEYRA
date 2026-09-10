@@ -8,6 +8,7 @@ import { ProfileModule } from './profile/profile.module';
 import { NutritionModule } from './nutrition/nutrition.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { AiModule } from './ai/ai.module';
+import { GroomingModule } from './grooming/grooming.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { AiModule } from './ai/ai.module';
     ProfileModule,
     NutritionModule,
     RecipesModule,
-    AiModule
+    AiModule,
+    GroomingModule
   ],
   controllers: [AppController],
   providers: [AppService],
