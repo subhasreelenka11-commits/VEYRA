@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface Recipe {
   id: string;
@@ -19,149 +21,56 @@ interface Recipe {
 }
 
 export default function RecipesPage() {
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  
+  const [generatedRecipes, setGeneratedRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState('');
 
-  const recipes: Recipe[] = [
-    {
-      id: '1',
-      title: 'Wild King Salmon with Herb Quinoa & Charred Broccolini',
-      category: 'Skin Glow',
-      time: '20 min',
-      calories: '540 kcal',
-      macros: { protein: '46g', carbs: '32g', fat: '24g' },
-      tags: ['High Omega-3', 'Astaxanthin', 'Gluten-Free'],
-      image: '/images/hero_wellness.png',
-      description: 'Pan-seared wild salmon served over fluffy lemon thyme quinoa and tender broccolini sautéed in cold-pressed extra virgin olive oil.',
-      benefits: 'Rich in EPA and DHA fatty acids that reduce systemic inflammation and preserve dermal elasticity.',
-      ingredients: [
-        '180g Wild King Salmon fillet',
-        '1/2 cup Organic Tricolor Quinoa (rinsed)',
-        '1 cup Tender Broccolini florets',
-        '1 tbsp Cold-pressed Extra Virgin Olive Oil',
-        '1/2 Fresh Lemon (juiced and zested)',
-        '1 tbsp Fresh Chopped Dill & Chives',
-        'Pinch of Maldon Flaky Sea Salt & Cracked Black Pepper',
-      ],
-      instructions: [
-        'Cook quinoa in 1 cup filtered water with a pinch of sea salt for 14 minutes until tender, then fluff with lemon zest and fresh herbs.',
-        'Heat olive oil in a cast-iron skillet over medium-high heat. Season salmon with sea salt and cracked pepper.',
-        'Sear salmon skin-side down for 4 minutes until crisp, flip gently and cook for another 3 minutes.',
-        'Toss broccolini into the skillet with a squeeze of fresh lemon for the last 2 minutes until bright green and slightly charred.',
-        'Plate warm quinoa, rest salmon on top, and garnish with fresh dill and lemon wedges.',
-      ],
-    },
-    {
-      id: '2',
-      title: 'Green Goddess Avocado & Edamame Vitality Bowl',
-      category: 'Plant Forward',
-      time: '15 min',
-      calories: '420 kcal',
-      macros: { protein: '22g', carbs: '38g', fat: '21g' },
-      tags: ['Plant Protein', 'Zinc Rich', 'Fiber'],
-      image: '/images/veyra_bento_nutrition.png',
-      description: 'Silky avocado cubes, organic steamed edamame, cucumber ribbons, and microgreens tossed in an herbaceous pumpkin seed tahini vinaigrette.',
-      benefits: 'High zinc and vitamin E content accelerates cell membrane turnover and shields against free radicals.',
-      ingredients: [
-        '1 cup Organic Shelled Edamame (steamed)',
-        '1/2 Haas Avocado (diced)',
-        '1 Japanese Cucumber (ribboned)',
-        '2 cups Baby Spinach & Wild Arugula',
-        '2 tbsp Pumpkin Seeds (Pepitas, toasted)',
-        '2 tbsp Green Goddess Herb Tahini Dressing',
-      ],
-      instructions: [
-        'Steam edamame for 4 minutes in salted water, then plunge into cold water to preserve vivid emerald green color.',
-        'Arrange fresh baby greens at the base of your bowl.',
-        'Layer ribboned cucumber, diced avocado, and chilled edamame evenly.',
-        'Drizzle generously with house herb tahini vinaigrette and top with roasted pumpkin seeds.',
-      ],
-    },
-    {
-      id: '3',
-      title: 'Golden Bone Broth with Ginger, Shiitake & Poached Egg',
-      category: 'High Protein',
-      time: '18 min',
-      calories: '320 kcal',
-      macros: { protein: '34g', carbs: '12g', fat: '14g' },
-      tags: ['Collagen Synthesis', 'Gut Health', 'Low Carb'],
-      image: '/images/hero_wellness.png',
-      description: 'Slow-simmered pasture-raised collagen bone broth infused with fresh ginger root, turmeric, sliced shiitake, and pasture-raised poached eggs.',
-      benefits: 'Pure collagen peptides nourish gut mucosal lining and support collagen fibrils in the dermis.',
-      ingredients: [
-        '2 cups Grass-fed Beef or Organic Chicken Bone Broth',
-        '2 Pasture-Raised Organic Eggs',
-        '1/2 cup Fresh Shiitake Mushrooms (sliced)',
-        '1 thumb Fresh Ginger (finely grated)',
-        '1/2 tsp Golden Turmeric & pinch of black pepper',
-        '1 Green Onion (scallion, finely sliced)',
-        '1 tsp Tamari / Coconut Aminos',
-      ],
-      instructions: [
-        'Gently heat bone broth with grated ginger, turmeric, tamari, and sliced shiitake over medium heat for 6-8 minutes.',
-        'In a separate small saucepan of simmering water, gently poach two pasture-raised eggs for 3 minutes.',
-        'Ladle fragrant golden broth and tender mushrooms into deep ceramic bowl.',
-        'Carefully center poached eggs and garnish with sliced scallions.',
-      ],
-    },
-    {
-      id: '4',
-      title: 'Mediterranean Herb Crusted Chicken with Greek Tzatziki',
-      category: 'Under 20 Mins',
-      time: '18 min',
-      calories: '490 kcal',
-      macros: { protein: '50g', carbs: '18g', fat: '22g' },
-      tags: ['Lean Protein', 'Metabolic Boost', 'Probiotic'],
-      image: '/images/veyra_bento_nutrition.png',
-      description: 'Char-grilled chicken breast coated in oregano and garlic rub, served alongside chilled cucumber mint probiotic yogurt tzatziki.',
-      benefits: 'Clean amino acids boost muscle protein synthesis and maintain firm tissue tone.',
-      ingredients: [
-        '200g Organic Free-Range Chicken Breast',
-        '1 tbsp Dried Oregano, Thyme & Garlic Powder',
-        '1/2 cup Full-Fat Greek Yogurt (A2 or Organic)',
-        '1/2 Cucumber (grated and squeezed dry)',
-        '1 clove Garlic (micro-planed)',
-        '1 tbsp Extra Virgin Olive Oil & Lemon Juice',
-      ],
-      instructions: [
-        'Pound chicken to even 1/2-inch thickness. Coat with oregano rub, sea salt, and a splash of olive oil.',
-        'Grill on medium-high heat for 5 minutes per side until internal temp reaches 165°F (74°C). Rest for 4 minutes.',
-        'Whisk Greek yogurt, squeezed cucumber, garlic, dill, lemon juice, and olive oil in a small bowl.',
-        'Slice chicken breast into medallions and serve alongside cooling tzatziki dip.',
-      ],
-    },
-    {
-      id: '5',
-      title: 'Wild Blueberry & Acai Antioxidant Chia Parfait',
-      category: 'Skin Glow',
-      time: '8 min',
-      calories: '340 kcal',
-      macros: { protein: '18g', carbs: '42g', fat: '12g' },
-      tags: ['Polyphenols', 'Anti-Inflammatory', 'Quick Prep'],
-      image: '/images/hero_wellness.png',
-      description: 'Velvety overnight coconut milk chia pudding layered with antioxidant-rich wild blueberries, freeze-dried acai, and raw almond slivers.',
-      benefits: 'Packed with anthocyanins that protect microcapillaries and enhance facial microcirculation.',
-      ingredients: [
-        '3 tbsp Organic Chia Seeds',
-        '3/4 cup Unsweetened Almond or Coconut Milk',
-        '1/2 cup Wild Organic Blueberries',
-        '1 scoop Plant or Marine Collagen Peptides',
-        '1 tbsp Raw Almond Slivers',
-        '1 tsp Raw Honey (optional)',
-      ],
-      instructions: [
-        'Whisk chia seeds and collagen powder into almond milk until completely suspended. Chill overnight or for 30 minutes.',
-        'Lightly crush half of the wild blueberries with a fork to release juices.',
-        'Layer chia pudding in a glass jar with crushed berries and fresh whole berries.',
-        'Top with toasted almond slivers and raw honey drizzle.',
-      ],
-    },
-  ];
+  useEffect(() => {
+    if (user) {
+      loadRecipes();
+    }
+  }, [user]);
+
+  const loadRecipes = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchApi('/recipes');
+      if (data && Array.isArray(data)) {
+        setGeneratedRecipes(data.map(item => item.recipeData));
+      }
+    } catch (err: any) {
+      console.error('Failed to load recipes', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateRecipes = async () => {
+    try {
+      setGenerating(true);
+      setError('');
+      const data = await fetchApi('/recipes/generate', { method: 'POST' });
+      if (data && Array.isArray(data)) {
+        setGeneratedRecipes(prev => [...data.map(item => item.recipeData), ...prev]);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate recipes.');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const categories = ['All', 'Skin Glow', 'High Protein', 'Under 20 Mins', 'Plant Forward'];
 
-  const filteredRecipes = recipes.filter((r) => {
+  const allRecipes = [...generatedRecipes];
+
+  const filteredRecipes = allRecipes.filter((r) => {
     const matchesCategory = selectedCategory === 'All' || r.category === selectedCategory;
     const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -189,17 +98,31 @@ export default function RecipesPage() {
             </p>
           </div>
 
-          <div className="w-full md:w-72 bg-white rounded-full p-1.5 border border-[#E2D4C8] shadow-sm flex items-center gap-2 px-4">
-            <span className="text-sm text-[#8A7970]">🔍</span>
-            <input
-              type="text"
-              placeholder="Search recipes, ingredients..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-xs text-[#1F1916] placeholder-[#8A7970] focus:outline-none"
-            />
+            <div className="w-full md:w-72 bg-white rounded-full p-1.5 border border-[#E2D4C8] shadow-sm flex items-center gap-2 px-4">
+              <span className="text-sm text-[#8A7970]">🔍</span>
+              <input
+                type="text"
+                placeholder="Search recipes, ingredients..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent text-xs text-[#1F1916] placeholder-[#8A7970] focus:outline-none"
+              />
+            </div>
           </div>
-        </div>
+          
+          <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-[#E2D4C8] pt-6 relative z-10">
+             <div className="text-xs text-[#6B5A52]">
+                {loading ? 'Loading your custom recipes...' : 'Merge AI-generated custom recipes based on your exact macro targets.'}
+                {error && <p className="text-red-500 font-bold mt-1">{error}</p>}
+             </div>
+             <button
+               onClick={generateRecipes}
+               disabled={generating}
+               className="w-full md:w-auto px-8 py-3 bg-[#1F1916] text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#334234] transition-all disabled:opacity-50 shadow-md"
+             >
+               {generating ? '✨ AI is Cooking...' : '✨ Generate AI Recipes'}
+             </button>
+          </div>
       </section>
 
       {/* 2. CATEGORY FILTER PILLS */}

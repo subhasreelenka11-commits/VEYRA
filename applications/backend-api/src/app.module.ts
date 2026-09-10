@@ -6,6 +6,9 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { NutritionModule } from './nutrition/nutrition.module';
+import { RecipesModule } from './recipes/recipes.module';
+import { AiModule } from './ai/ai.module';
+import { AwsModule } from './aws/aws.module';
 
 @Module({
   imports: [
@@ -16,7 +19,10 @@ import { NutritionModule } from './nutrition/nutrition.module';
     PrismaModule, 
     AuthModule, 
     ProfileModule,
-    NutritionModule
+    NutritionModule,
+    RecipesModule,
+    AiModule,
+    AwsModule
   ],
   controllers: [AppController],
   providers: [AppService],

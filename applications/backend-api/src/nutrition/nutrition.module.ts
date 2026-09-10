@@ -9,5 +9,6 @@ import { PrismaModule } from '../prisma/prisma.module';
   imports: [AiModule, PrismaModule],
   controllers: [NutritionController],
   providers: [NutritionService, NutritionCalculator],
+  exports: [NutritionCalculator],
 })
 export class NutritionModule {}
