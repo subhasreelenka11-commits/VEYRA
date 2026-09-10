@@ -29,7 +29,13 @@ async function bootstrap() {
   app.use(cookieParser());
 
   const port = Number(configService.get('PORT')) || Number(process.env.PORT) || 5001;
-  await app.listen(port);
+  const server = await app.listen(port);
+  
+  // Increase timeouts for long-running AI requests (Gemini can take 30-60s)
+  server.setTimeout(120000); // 2 minutes
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 125000;
+  
   console.log(`[NestApplication] Veyra Backend listening on port ${port}`);
 }
 bootstrap();

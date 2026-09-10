@@ -32,6 +32,14 @@ const nextConfig = {
         destination: `${backendUrl}/auth/:path*`,
       },
       {
+        source: '/recipes/:path*',
+        destination: `${backendUrl}/recipes/:path*`,
+      },
+      {
+        source: '/skin-analysis/:path*',
+        destination: `${backendUrl}/skin-analysis/:path*`,
+      },
+      {
         source: '/health',
         destination: `${backendUrl}/health`,
       },
@@ -39,6 +47,9 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  experimental: {
+    proxyTimeout: 120000, // 2 minutes - for long-running AI requests
   },
   images: {
     remotePatterns: [

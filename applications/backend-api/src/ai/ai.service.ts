@@ -7,27 +7,98 @@ export class AiService {
 
   constructor(private configService: ConfigService) {}
 
-  async generateNutritionPlan(context: any): Promise<any> {
-    const apiKey = this.configService.get<string>('FALLBACK_LLM_API_KEY');
-    const baseUrl = this.configService.get<string>('FALLBACK_LLM_BASE_URL') || 'https://api.openai.com/v1';
-    const model = this.configService.get<string>('FALLBACK_AI_MODEL') || 'gpt-4o-mini';
+  /**
+   * Internal helper to call AI providers with fallback logic.
+   * Tries Gemini first (if key is available), then falls back to OpenRouter.
+   */
+  private async executeWithFallback(payload: any): Promise<any> {
+    const geminiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const openRouterKey = this.configService.get<string>('FALLBACK_LLM_API_KEY') || this.configService.get<string>('OPENROUTER_API_KEY');
     
-    if (!apiKey) {
-      this.logger.error('FALLBACK_LLM_API_KEY is not defined in environment variables.');
-      throw new InternalServerErrorException('AI configuration error.');
+    let lastError: any = null;
+
+    // 1. Try Gemini
+    if (geminiKey) {
+      try {
+        this.logger.log('Attempting AI generation with Gemini Pro...');
+        const geminiPayload = { ...payload, model: 'gemini-3.6-flash', max_tokens: 4096 };
+        
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${geminiKey}`
+          },
+          body: JSON.stringify(geminiPayload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.choices?.[0]?.message?.content;
+          if (text) {
+            this.logger.log('✅ SUCCESS: AI request fulfilled by GEMINI PRO');
+            const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            return JSON.parse(cleanedText);
+          }
+        } else {
+          this.logger.warn(`Gemini failed with status ${res.status}: ${await res.text()}`);
+        }
+      } catch (err: any) {
+        this.logger.warn(`Gemini exception: ${err.message}`);
+        lastError = err;
+      }
+    } else {
+      this.logger.warn('No GEMINI_API_KEY provided, skipping Gemini.');
     }
 
+    // 2. Try OpenRouter (Fallback)
+    if (openRouterKey) {
+      try {
+        this.logger.log('Attempting AI generation with OpenRouter Fallback...');
+        const orPayload = { ...payload, model: 'google/gemini-2.5-flash', max_tokens: 4096 };
+        
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openRouterKey}`,
+            'HTTP-Referer': 'http://localhost:3000',
+            'X-Title': 'Veyra'
+          },
+          body: JSON.stringify(orPayload)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.choices?.[0]?.message?.content;
+          if (text) {
+            this.logger.log('✅ SUCCESS: AI request fulfilled by OPENROUTER');
+            const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            return JSON.parse(cleanedText);
+          }
+        } else {
+          this.logger.error(`OpenRouter failed with status ${res.status}: ${await res.text()}`);
+        }
+      } catch (err: any) {
+        this.logger.error(`OpenRouter exception: ${err.message}`);
+        lastError = err;
+      }
+    } else {
+      this.logger.error('No FALLBACK_LLM_API_KEY (OpenRouter) provided.');
+    }
+
+    throw new InternalServerErrorException('All AI providers failed to generate a response.');
+  }
+
+  async generateNutritionPlan(context: any): Promise<any> {
     const systemPrompt = `You are an elite, professional clinical dietitian and sports nutritionist for the Veyra app.
 Your task is to generate a highly structured, clinical macro-nutrient and supplementation schedule based strictly on the user's profile and pre-calculated targets.
 
 IMPORTANT INSTRUCTIONS:
 - The backend has already calculated the exact daily nutrition targets (Calories, Protein, Carbs, Fat). DO NOT recalculate them.
 - DO NOT suggest ANY specific food items, ingredients, or recipes.
-- ONLY provide the precise time block (e.g., "08:00 AM - 09:00 AM" or "Post-Workout"), the exact macro-nutrient distribution required for that block, and professional clinical instructions.
-- Provide expert guidance on nutrient timing, hydration protocols, and any essential supplementary intake (e.g., Whey isolate, Creatine, Omega-3s, Multivitamins) if relevant to their goal.
-- For the hydration protocol, provide highly specific, elite-level sports science recommendations (including precise electrolyte replenishment targets like sodium/potassium, and exact fluid timing around workouts).
-- Maintain a clinical, highly professional tone.
-- Return ONLY valid JSON. Do not include markdown code blocks or any free-form text outside the JSON.
+- ONLY provide the precise time block, exact macro-nutrient distribution, and professional clinical instructions.
+- Return ONLY valid JSON. Do not include markdown code blocks.
 
 REQUIRED JSON STRUCTURE:
 {
@@ -38,15 +109,12 @@ REQUIRED JSON STRUCTURE:
     {
       "name": "Meal 1 (Morning Protocol)",
       "suggestions": [
-        { "meal": "Macro-Nutrient Target", "description": "Consume 25% of daily protein. Clinical instruction: Prioritize fast-absorbing protein and complex carbohydrates to break the fast.", "approxCalories": 400, "protein": 25, "carbs": 45, "fat": 12 }
+        { "meal": "Macro-Nutrient Target", "description": "Instruction here.", "approxCalories": 400, "protein": 25, "carbs": 45, "fat": 12 }
       ]
-    },
-    { "name": "Meal 2 (Mid-Day Protocol)", "suggestions": [] },
-    { "name": "Meal 3 (Pre/Post Training Protocol)", "suggestions": [] },
-    { "name": "Meal 4 (Evening Protocol)", "suggestions": [] }
+    }
   ],
-  "hydration": { "suggestion": "Base clinical protocol: 3.5-4.0L structured daily intake.", "note": "Intra-workout: Consume 500ml-750ml hypotonic fluid per hour of training. Add 500mg sodium and 200mg potassium to replenish critical electrolytes and support cellular hydration." },
-  "tips": ["Clinical Tip 1 (e.g., regarding nutrient timing)", "Clinical Tip 2 (e.g., regarding supplement timing)"]
+  "hydration": { "suggestion": "...", "note": "..." },
+  "tips": ["Tip 1", "Tip 2"]
 }`;
 
     const userPrompt = `User Profile & Targets:
@@ -54,63 +122,24 @@ ${JSON.stringify(context, null, 2)}
 
 Generate the personalized meal plan as a JSON object matching the required structure exactly.`;
 
-    try {
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          response_format: { type: "json_object" }
-        })
-      });
+    const payload = {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      response_format: { type: "json_object" }
+    };
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        this.logger.error(`AI API Error: ${response.status} - ${errorText}`);
-        throw new Error(`AI Provider failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const text = data.choices?.[0]?.message?.content;
-      
-      if (!text) {
-        throw new Error('No content returned from AI');
-      }
-
-      // Ensure valid JSON parsing by stripping markdown code blocks
-      const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const jsonPlan = JSON.parse(cleanedText);
-      return jsonPlan;
-
-    } catch (error: any) {
-      this.logger.error('Failed to generate nutrition plan:', error.message);
-      throw new InternalServerErrorException('Failed to generate personalized nutrition plan.');
-    }
+    return this.executeWithFallback(payload);
   }
 
   async generateSmartRecipes(context: any): Promise<any> {
-    const apiKey = this.configService.get<string>('FALLBACK_LLM_API_KEY');
-    const baseUrl = this.configService.get<string>('FALLBACK_LLM_BASE_URL') || 'https://api.openai.com/v1';
-    const model = this.configService.get<string>('FALLBACK_AI_MODEL') || 'gpt-4o-mini';
-    
-    if (!apiKey) {
-      throw new InternalServerErrorException('AI configuration error.');
-    }
-
     const systemPrompt = `You are an elite, professional culinary nutritionist for the Veyra app.
-Your task is to generate 7 personalized, delicious recipes (one for each day of the week) that STRICTLY adhere to the user's calculated macro-nutrient targets, dietary preferences, and constraints (allergies, dislikes).
+Your task is to generate 7 personalized, delicious recipes that STRICTLY adhere to the user's calculated macro-nutrient targets and constraints (allergies, dislikes).
 
 IMPORTANT INSTRUCTIONS:
 - Generate exactly 7 recipes.
-- The macros for each recipe should represent roughly one main meal (e.g., 30-40% of their daily target).
-- Allergies are HARD CONSTRAINTS. Never suggest any ingredient listed in allergies.
+- Allergies are HARD CONSTRAINTS.
 - Return ONLY valid JSON. Do not include markdown code blocks.
 
 REQUIRED JSON STRUCTURE:
@@ -118,21 +147,17 @@ REQUIRED JSON STRUCTURE:
   "recipes": [
     {
       "id": "will_be_generated_by_db",
-      "title": "Creative & Appetizing Recipe Name",
+      "title": "Recipe Name",
       "category": "High Protein",
       "time": "25 min",
-      "calories": "[DYNAMIC: Calculate to be roughly 30-40% of the user's daily target kcal]",
-      "macros": { 
-        "protein": "[DYNAMIC: ~33% of daily target]g", 
-        "carbs": "[DYNAMIC: ~33% of daily target]g", 
-        "fat": "[DYNAMIC: ~33% of daily target]g" 
-      },
-      "tags": ["Gluten-Free", "High Omega-3"],
+      "calories": "[DYNAMIC]",
+      "macros": { "protein": "[DYNAMIC]g", "carbs": "[DYNAMIC]g", "fat": "[DYNAMIC]g" },
+      "tags": ["Gluten-Free"],
       "image": "/placeholder.png",
-      "description": "Mouth-watering description of the meal.",
-      "benefits": "Targeted wellness benefit (e.g., Skin Glow, Muscle Recovery).",
-      "ingredients": ["Ingredient 1", "Ingredient 2"],
-      "instructions": ["Step 1", "Step 2"]
+      "description": "Description",
+      "benefits": "Benefit",
+      "ingredients": ["Ingredient 1"],
+      "instructions": ["Step 1"]
     }
   ]
 }`;
@@ -142,42 +167,58 @@ ${JSON.stringify(context, null, 2)}
 
 Generate the recipes JSON.`;
 
-    try {
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          response_format: { type: "json_object" }
-        })
-      });
+    const payload = {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      response_format: { type: "json_object" }
+    };
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`AI Provider error (${response.status}): ${errorText}`);
-      }
+    return this.executeWithFallback(payload);
+  }
 
-      const data = await response.json();
-      const text = data.choices?.[0]?.message?.content;
-      
-      if (!text) {
-        throw new Error('No content returned from AI');
-      }
+  async analyzeSkinImage(base64Image: string): Promise<any> {
+    const systemPrompt = `You are an elite, AI-powered virtual dermatologist. Analyze the provided facial scan image.
+You must return your analysis STRICTLY as a valid JSON object. Do not include markdown code blocks.
 
-      // Strip potential markdown code blocks (e.g., ```json\n...\n```) before parsing
-      const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
-      return JSON.parse(cleanedText);
-    } catch (error: any) {
-      this.logger.error('Failed to generate smart recipes:', error.message);
-      throw new InternalServerErrorException(`Failed to generate personalized recipes: ${error.message}`);
+REQUIRED JSON STRUCTURE:
+{
+  "overallScore": 85,
+  "metrics": [
+    { "name": "Barrier Integrity", "score": 88, "status": "Optimal", "color": "text-emerald-700", "bg": "bg-emerald-500", "note": "Analysis note here" },
+    { "name": "Hydration Level", "score": 82, "status": "Hydrated", "color": "text-emerald-700", "bg": "bg-emerald-500", "note": "Analysis note here" },
+    { "name": "Texture & Micro-relief", "score": 79, "status": "Smooth", "color": "text-emerald-700", "bg": "bg-emerald-500", "note": "Analysis note here" },
+    { "name": "Redness & Sensitivity", "score": 22, "status": "Low Risk", "color": "text-[#708264]", "bg": "bg-[#708264]", "note": "Analysis note here" },
+    { "name": "Sebum Equilibrium", "score": 38, "status": "Balanced", "color": "text-emerald-700", "bg": "bg-emerald-500", "note": "Analysis note here" },
+    { "name": "UV / Photo-stress", "score": 16, "status": "Low", "color": "text-[#708264]", "bg": "bg-[#708264]", "note": "Analysis note here" }
+  ],
+  "actives": [
+    {
+      "name": "Recommended Active Ingredient Name",
+      "purpose": "Why this is prescribed based on the scan.",
+      "match": "96% Match",
+      "type": "Morning & Night"
     }
+  ]
+}
+
+Provide exactly 6 metrics matching those names, and 3-4 recommended actives. Format precisely as requested.`;
+
+    const payload = {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Analyze this skin scan.' },
+            { type: 'image_url', image_url: { url: base64Image } }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" }
+    };
+
+    return this.executeWithFallback(payload);
   }
 }

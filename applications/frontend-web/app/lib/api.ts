@@ -13,6 +13,7 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
     headers,
     credentials: 'include', // Important for sending/receiving HttpOnly cookies
     cache: 'no-store',
+    signal: options.signal || AbortSignal.timeout(120000), // 2 min timeout for AI requests
   });
 
   if (!response.ok) {
