@@ -8,10 +8,12 @@ export class AiService {
   constructor(private configService: ConfigService) {}
 
   async generateNutritionPlan(context: any): Promise<any> {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const apiKey = this.configService.get<string>('FALLBACK_LLM_API_KEY');
+    const baseUrl = this.configService.get<string>('FALLBACK_LLM_BASE_URL') || 'https://api.openai.com/v1';
+    const model = this.configService.get<string>('FALLBACK_AI_MODEL') || 'gpt-4o-mini';
     
     if (!apiKey) {
-      this.logger.error('GEMINI_API_KEY is not defined in environment variables.');
+      this.logger.error('FALLBACK_LLM_API_KEY is not defined in environment variables.');
       throw new InternalServerErrorException('AI configuration error.');
     }
 
@@ -39,9 +41,9 @@ REQUIRED JSON STRUCTURE:
         { "meal": "Macro-Nutrient Target", "description": "Consume 25% of daily protein. Clinical instruction: Prioritize fast-absorbing protein and complex carbohydrates to break the fast.", "approxCalories": 400, "protein": 25, "carbs": 45, "fat": 12 }
       ]
     },
-    { "name": "Meal 2 (Mid-Day Protocol)", "suggestions": [...] },
-    { "name": "Meal 3 (Pre/Post Training Protocol)", "suggestions": [...] },
-    { "name": "Meal 4 (Evening Protocol)", "suggestions": [...] }
+    { "name": "Meal 2 (Mid-Day Protocol)", "suggestions": [] },
+    { "name": "Meal 3 (Pre/Post Training Protocol)", "suggestions": [] },
+    { "name": "Meal 4 (Evening Protocol)", "suggestions": [] }
   ],
   "hydration": { "suggestion": "Base clinical protocol: 3.5-4.0L structured daily intake.", "note": "Intra-workout: Consume 500ml-750ml hypotonic fluid per hour of training. Add 500mg sodium and 200mg potassium to replenish critical electrolytes and support cellular hydration." },
   "tips": ["Clinical Tip 1 (e.g., regarding nutrient timing)", "Clinical Tip 2 (e.g., regarding supplement timing)"]
@@ -53,28 +55,30 @@ ${JSON.stringify(context, null, 2)}
 Generate the personalized meal plan as a JSON object matching the required structure exactly.`;
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: systemPrompt + '\\n\\n' + userPrompt }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0.2
-          }
+          model: model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: { type: "json_object" }
         })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         this.logger.error(`AI API Error: ${response.status} - ${errorText}`);
-        throw new Error('AI Provider failed to respond correctly.');
+        throw new Error(`AI Provider failed: ${response.status}`);
       }
 
       const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const text = data.choices?.[0]?.message?.content;
       
       if (!text) {
         throw new Error('No content returned from AI');
@@ -92,17 +96,19 @@ Generate the personalized meal plan as a JSON object matching the required struc
   }
 
   async generateSmartRecipes(context: any): Promise<any> {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    const apiKey = this.configService.get<string>('FALLBACK_LLM_API_KEY');
+    const baseUrl = this.configService.get<string>('FALLBACK_LLM_BASE_URL') || 'https://api.openai.com/v1';
+    const model = this.configService.get<string>('FALLBACK_AI_MODEL') || 'gpt-4o-mini';
     
     if (!apiKey) {
       throw new InternalServerErrorException('AI configuration error.');
     }
 
     const systemPrompt = `You are an elite, professional culinary nutritionist for the Veyra app.
-Your task is to generate 3 personalized, delicious recipes that STRICTLY adhere to the user's calculated macro-nutrient targets, dietary preferences, and constraints (allergies, dislikes).
+Your task is to generate 7 personalized, delicious recipes (one for each day of the week) that STRICTLY adhere to the user's calculated macro-nutrient targets, dietary preferences, and constraints (allergies, dislikes).
 
 IMPORTANT INSTRUCTIONS:
-- Generate exactly 3 recipes.
+- Generate exactly 7 recipes.
 - The macros for each recipe should represent roughly one main meal (e.g., 30-40% of their daily target).
 - Allergies are HARD CONSTRAINTS. Never suggest any ingredient listed in allergies.
 - Return ONLY valid JSON. Do not include markdown code blocks.
@@ -122,7 +128,7 @@ REQUIRED JSON STRUCTURE:
         "fat": "[DYNAMIC: ~33% of daily target]g" 
       },
       "tags": ["Gluten-Free", "High Omega-3"],
-      "image": "https://loremflickr.com/800/600/food,[DYNAMIC: One main ingredient, e.g., chicken, salmon, tofu, pasta - lowercase, no spaces]",
+      "image": "/placeholder.png",
       "description": "Mouth-watering description of the meal.",
       "benefits": "Targeted wellness benefit (e.g., Skin Glow, Muscle Recovery).",
       "ingredients": ["Ingredient 1", "Ingredient 2"],
@@ -137,26 +143,29 @@ ${JSON.stringify(context, null, 2)}
 Generate the recipes JSON.`;
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: systemPrompt + '\n\n' + userPrompt }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0.7
-          }
+          model: model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: { type: "json_object" }
         })
       });
 
       if (!response.ok) {
-        throw new Error('AI Provider failed to respond correctly.');
+        const errorText = await response.text();
+        throw new Error(`AI Provider error (${response.status}): ${errorText}`);
       }
 
       const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const text = data.choices?.[0]?.message?.content;
       
       if (!text) {
         throw new Error('No content returned from AI');
@@ -166,33 +175,9 @@ Generate the recipes JSON.`;
       const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
       return JSON.parse(cleanedText);
-
     } catch (error: any) {
       this.logger.error('Failed to generate smart recipes:', error.message);
       throw new InternalServerErrorException(`Failed to generate personalized recipes: ${error.message}`);
-    }
-  }
-
-  /**
-   * Generates a food image based on the prompt (ingredient).
-   * Since we only have Gemini Text API configured, this currently mocks the image generation
-   * by securely fetching a highly relevant placeholder and returning its buffer for AWS upload.
-   */
-  async generateImageBuffer(ingredientPrompt: string): Promise<Buffer> {
-    try {
-      const sanitized = ingredientPrompt.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const url = `https://loremflickr.com/800/600/food,${sanitized}`;
-      
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.statusText}`);
-      }
-      
-      const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
-    } catch (error: any) {
-      this.logger.error('Failed to generate/fetch image buffer:', error.message);
-      throw new InternalServerErrorException('Image generation failed.');
     }
   }
 }

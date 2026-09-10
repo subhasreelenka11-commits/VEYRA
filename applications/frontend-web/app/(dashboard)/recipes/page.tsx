@@ -57,7 +57,7 @@ export default function RecipesPage() {
       setError('');
       const data = await fetchApi('/recipes/generate', { method: 'POST' });
       if (data && Array.isArray(data)) {
-        setGeneratedRecipes(prev => [...data.map(item => item.recipeData), ...prev]);
+        await loadRecipes(); // Fetch fresh state from DB so deleted ones disappear from UI
       }
     } catch (err: any) {
       setError(err.message || 'Failed to generate recipes.');

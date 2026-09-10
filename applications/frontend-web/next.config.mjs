@@ -44,12 +44,9 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'loremflickr.com',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5001',
+        hostname: 'image.pollinations.ai',
+        port: '',
+        pathname: '/**',
       },
     ],
   },

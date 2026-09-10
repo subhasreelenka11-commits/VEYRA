@@ -8,9 +8,6 @@ import { ProfileModule } from './profile/profile.module';
 import { NutritionModule } from './nutrition/nutrition.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { AiModule } from './ai/ai.module';
-import { StorageModule } from './storage/storage.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 @Module({
   imports: [
@@ -18,17 +15,12 @@ import { join } from 'path';
       isGlobal: true,
       envFilePath: '../../.env',
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'public'),
-      serveRoot: '/', // This serves /public/uploads/file.jpg at http://localhost:5001/uploads/file.jpg
-    }),
     PrismaModule, 
     AuthModule, 
     ProfileModule,
     NutritionModule,
     RecipesModule,
-    AiModule,
-    StorageModule
+    AiModule
   ],
   controllers: [AppController],
   providers: [AppService],

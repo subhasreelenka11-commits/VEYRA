@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { NutritionCalculator } from '../nutrition/nutrition.calculator';
-import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class RecipesService {
@@ -12,18 +11,12 @@ export class RecipesService {
     private prisma: PrismaService,
     private aiService: AiService,
     private calculator: NutritionCalculator,
-    private storageService: StorageService,
   ) {}
 
   async getSavedRecipes(userId: string): Promise<any[]> {
     // @ts-ignore
     return this.prisma.smartRecipe.findMany({
-      where: {
-        OR: [
-          { userId: userId },
-          { userId: null },
-        ],
-      },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -68,34 +61,45 @@ export class RecipesService {
       calculatedNutrition: targets,
     };
 
+    // 3. Delete old recipes for this user
+    await this.prisma.smartRecipe.deleteMany({
+      where: { userId },
+    });
+
     // 4. Request AI Recipes
     this.logger.log(`Generating AI smart recipes for user ${userId}...`);
     const aiRecipesData = await this.aiService.generateSmartRecipes(aiContext);
 
-    // 5. Save the Recipes & Generate/Upload Images
+    // 5. Save the Recipes & Hotlink Images
     const savedRecipes: any[] = [];
-    for (const recipe of aiRecipesData.recipes) {
-      try {
-        this.logger.log(`Fetching/generating image buffer for recipe: ${recipe.title}`);
-        const imageBuffer = await this.aiService.generateImageBuffer(recipe.title);
-        const localUrl = await this.storageService.uploadImage(imageBuffer, 'image/jpeg');
-        if (localUrl) {
-          recipe.image = localUrl;
-        }
-      } catch (err: any) {
-        this.logger.error(`Failed to generate/upload image for recipe ${recipe.title}: ${err.message}`);
-        // Keep the raw generated URL or a static fallback if it fails
-      }
-
-      // @ts-ignore
-      const saved = await this.prisma.smartRecipe.create({
-        data: {
-          userId,
-          recipeData: recipe,
-        },
-      });
-      savedRecipes.push(saved);
+    
+    if (!aiRecipesData || !Array.isArray(aiRecipesData.recipes)) {
+      throw new InternalServerErrorException('AI returned an invalid recipe format.');
     }
+
+    // Run DB saving concurrently
+    const promises = aiRecipesData.recipes.map(async (recipe: any, index: number) => {
+      if (!recipe || typeof recipe !== 'object') return; // Skip malformed recipes
+
+      // Safely assign 1 of the 7 static local images (fallback to 1 if we somehow have >7 recipes)
+      const imageIndex = (index % 7) + 1;
+      recipe.image = `/recipe-${imageIndex}.jpg`;
+
+      try {
+        // @ts-ignore
+        const saved = await this.prisma.smartRecipe.create({
+          data: {
+            userId,
+            recipeData: recipe,
+          },
+        });
+        savedRecipes.push(saved);
+      } catch (dbErr: any) {
+        this.logger.error(`Failed to save recipe to DB: ${dbErr.message}`);
+      }
+    });
+
+    await Promise.all(promises);
 
     return savedRecipes;
   }
