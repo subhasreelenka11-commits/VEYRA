@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -15,6 +16,7 @@ model User {
   updatedAt    DateTime     @updatedAt
   
   profile      UserProfile?
+  nutritionPlan NutritionPlan?
 }
 
 model UserProfile {
@@ -63,4 +65,23 @@ enum DietaryPreference {
   VEGAN
   EGGETARIAN
   OTHER
+}
+
+model NutritionPlan {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  bmi            Float
+  bmr            Float
+  tdee           Float
+  targetCalories Float
+  proteinGrams   Float
+  carbsGrams     Float
+  fatGrams       Float
+  
+  planData       Json     // Stores the structured JSON from the AI
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

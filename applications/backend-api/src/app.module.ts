@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
+import { NutritionModule } from './nutrition/nutrition.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { ProfileModule } from './profile/profile.module';
     }),
     PrismaModule, 
     AuthModule, 
-    ProfileModule
+    ProfileModule,
+    NutritionModule
   ],
   controllers: [AppController],
   providers: [AppService],

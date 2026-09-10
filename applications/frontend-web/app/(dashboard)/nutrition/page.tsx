@@ -1,279 +1,273 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 import { fetchApi } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
+import Link from 'next/link';
 
 export default function NutritionPage() {
-  const [profileData, setProfileData] = useState<any>(null);
-  const [waterCount, setWaterCount] = useState(6); // Glasses (250ml each)
-  const targetWater = 10; // 2.5L
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [plan, setPlan] = useState<any>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const res = await fetchApi('/profile');
-        if (res?.profile) {
-          setProfileData(res.profile);
-        }
-      } catch (err) {
-        // Fallback gracefully
+    loadPlan();
+  }, [user]);
+
+  const loadPlan = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await fetchApi('/nutrition');
+      if (data) {
+        setPlan(data);
+      } else {
+        setPlan(null); // No plan exists
       }
-    };
-    loadProfile();
-  }, []);
-
-  const addWater = () => {
-    if (waterCount < targetWater + 4) {
-      setWaterCount(prev => prev + 1);
+    } catch (err: any) {
+      if (err.message?.includes('404')) {
+         setPlan(null);
+      } else {
+         setError(err.message || 'Failed to load nutrition plan.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const removeWater = () => {
-    if (waterCount > 0) {
-      setWaterCount(prev => prev - 1);
+  const generatePlan = async () => {
+    try {
+      setGenerating(true);
+      setError('');
+      const data = await fetchApi('/nutrition/generate', { method: 'POST' });
+      setPlan(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate nutrition plan. Please try again.');
+    } finally {
+      setGenerating(false);
     }
   };
 
-  const goal = profileData?.goal?.toLowerCase().replace('_', ' ') || 'overall vitality & glowing skin';
-  const diet = profileData?.dietaryPreference?.toLowerCase().replace('_', ' ') || 'balanced whole foods';
-
-  const macros = [
-    { name: 'Protein', grams: 140, calories: 560, percent: 30, color: 'bg-emerald-600', text: 'text-emerald-700', note: 'Cellular repair & collagen preservation' },
-    { name: 'Healthy Fats', grams: 70, calories: 630, percent: 30, color: 'bg-amber-600', text: 'text-amber-700', note: 'Omega-3 fatty acids for skin lipid membrane' },
-    { name: 'Complex Carbs', grams: 210, calories: 840, percent: 40, color: 'bg-[#708264]', text: 'text-[#708264]', note: 'Low-glycemic slow fuel & gut microbiome fiber' },
-  ];
-
-  const meals = [
-    {
-      time: '08:30 AM',
-      name: 'Breakfast',
-      title: 'Omega-3 Chia Pudding & Roasted Berries',
-      calories: '420 kcal',
-      macros: '24g P • 48g C • 16g F',
-      highlights: 'Wild blueberries, chia seeds, almond butter, grass-fed collagen peptides',
-      icon: '🫐',
-    },
-    {
-      time: '01:00 PM',
-      name: 'Lunch',
-      title: 'Mediterranean Herb Chicken & Quinoa Greens Bowl',
-      calories: '610 kcal',
-      macros: '46g P • 52g C • 22g F',
-      highlights: 'Free-range chicken breast, tricolor quinoa, kalamata olives, cold-pressed olive oil',
-      icon: '🥗',
-    },
-    {
-      time: '04:30 PM',
-      name: 'Afternoon Nourish',
-      title: 'Activated Walnut Butter & Crisp Green Apple',
-      calories: '240 kcal',
-      macros: '6g P • 22g C • 15g F',
-      highlights: 'Polyphenol rich, prebiotic fiber, steady blood sugar curve',
-      icon: '🍏',
-    },
-    {
-      time: '07:30 PM',
-      name: 'Dinner',
-      title: 'Wild King Salmon with Braised Fennel & Asparagus',
-      calories: '680 kcal',
-      macros: '52g P • 28g C • 36g F',
-      highlights: 'Astaxanthin antioxidant, high EPA/DHA omega oils, magnesium-rich greens',
-      icon: '🐟',
-    },
-  ];
-
-  return (
-    <div className="space-y-8 pb-12">
-      {/* 1. HERO HEADER */}
-      <section className="bg-[#EFE7E0] rounded-[36px] border border-[#E2D4C8] p-8 sm:p-10 shadow-sm relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-800 text-sm">🥗</span>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#708264]">
-                METABOLIC & DERMAL NUTRITION
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-[#1F1916] tracking-tight">
-              Personalized Fuel
-            </h1>
-            <p className="text-xs sm:text-sm text-[#6B5A52] leading-relaxed">
-              Calibrated to fuel your cellular energy, balance sebum, and maintain a resilient dermal barrier. Optimized for your goal of <span className="font-bold text-[#1F1916] capitalize">{goal}</span> and a <span className="font-bold text-[#1F1916] capitalize">{diet}</span> diet.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <Link
-              href="/recipes"
-              className="bg-[#334234] text-white px-6 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#253226] transition-all shadow-md flex items-center gap-2 cursor-pointer"
-            >
-              <span>🍳</span>
-              <span>Browse Curated Recipes →</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. CALORIC & MACRONUTRIENT TARGETS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        {/* Left: Energy Target Card */}
-        <div className="lg:col-span-4 bg-[#2B3B2C] text-white rounded-[32px] p-8 shadow-md flex flex-col justify-between space-y-6">
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300">
-                DAILY METABOLIC TARGET
-              </span>
-              <span className="text-xl">🔥</span>
-            </div>
-            <h3 className="text-2xl font-serif font-bold">2,030 kcal</h3>
-            <p className="text-xs text-gray-300 mt-1">Calibrated maintenance with lean muscle tone</p>
-          </div>
-
-          {/* Hydration Tracker */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/15 space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">Hydration Intake</span>
-                <span className="text-lg font-serif font-bold text-white">
-                  {(waterCount * 0.25).toFixed(2)}L / {(targetWater * 0.25).toFixed(2)}L
-                </span>
-              </div>
-              <span className="text-xl">💧</span>
-            </div>
-
-            <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-emerald-400 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(100, (waterCount / targetWater) * 100)}%` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-[11px] text-gray-300">{waterCount} of {targetWater} glasses</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={removeWater}
-                  className="w-7 h-7 rounded-full bg-white/15 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  -
-                </button>
-                <button
-                  onClick={addWater}
-                  className="w-7 h-7 rounded-full bg-emerald-400 hover:bg-emerald-300 text-[#1F1916] text-xs font-bold flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 text-[11px] text-gray-300 leading-relaxed border-t border-white/15">
-            Tip: Ample hydration increases skin elasticity and accelerates metabolic waste filtration.
-          </div>
-        </div>
-
-        {/* Right: Macro Distribution Breakdown */}
-        <div className="lg:col-span-8 bg-white rounded-[32px] border border-[#E8DCD2] p-8 shadow-sm flex flex-col justify-between space-y-6">
-          <div className="flex justify-between items-center border-b border-[#E8DCD2] pb-4">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#708264]">
-                BALANCED MACROS
-              </span>
-              <h3 className="text-2xl font-serif font-bold text-[#1F1916]">Nutritional Architecture</h3>
-            </div>
-            <span className="text-xs font-bold text-[#334234] bg-[#E8EFE6] px-3.5 py-1.5 rounded-full border border-[#708264]/20">
-              Low Glycemic Load
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {macros.map((m) => (
-              <div key={m.name} className="bg-[#FAF7F2] p-5 rounded-2xl border border-[#E8DCD2] space-y-2 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-[#1F1916]">{m.name}</span>
-                    <span className="font-mono font-bold text-[#8A7970]">{m.percent}%</span>
-                  </div>
-                  <div className="text-2xl font-serif font-bold text-[#1F1916] mt-1">
-                    {m.grams}g
-                  </div>
-                  <p className="text-[11px] text-[#8A7970]">{m.calories} kcal</p>
-                </div>
-
-                <div className="w-full h-2 bg-[#E8DCD2]/60 rounded-full overflow-hidden">
-                  <div className={`h-full ${m.color} rounded-full`} style={{ width: `${m.percent * 2}%` }} />
-                </div>
-
-                <p className="text-[10px] text-[#6B5A52] leading-tight pt-1 border-t border-[#E8DCD2]/60">
-                  {m.note}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Skin-Targeted Micronutrient Pillars */}
-          <div className="pt-4 border-t border-[#E8DCD2] flex flex-wrap gap-4 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="font-bold text-[#1F1916]">Zinc & Omega-3:</span>
-              <span className="text-[#6B5A52]">Controls inflammatory pathways</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="font-bold text-[#1F1916]">Polyphenols:</span>
-              <span className="text-[#6B5A52]">Antioxidant skin photoprotection</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#708264]" />
-              <span className="font-bold text-[#1F1916]">Prebiotic Inulin:</span>
-              <span className="text-[#6B5A52]">Gut-skin axis stabilization</span>
-            </div>
-          </div>
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-8 animate-pulse">
+        <div className="h-24 bg-[#EADCD4]/50 rounded-[32px]" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="h-32 bg-[#EADCD4]/50 rounded-[24px]" />
+          <div className="h-32 bg-[#EADCD4]/50 rounded-[24px]" />
+          <div className="h-32 bg-[#EADCD4]/50 rounded-[24px]" />
+          <div className="h-32 bg-[#EADCD4]/50 rounded-[24px]" />
         </div>
       </div>
+    );
+  }
 
-      {/* 3. DAILY MEAL TIMELINE */}
-      <section className="bg-white rounded-[32px] border border-[#E8DCD2] p-8 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-[#E8DCD2] pb-4">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#708264]">
-              MEAL RHYTHM
-            </span>
-            <h3 className="text-2xl font-serif font-bold text-[#1F1916]">Today's Suggested Menu</h3>
-          </div>
-          <p className="text-xs text-[#8A7970]">Timed for peak metabolic absorption</p>
+  return (
+    <div className="max-w-5xl mx-auto space-y-10 pb-20">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <h1 className="text-4xl font-serif font-bold text-[#1F1916] tracking-tight">Nutrition</h1>
+          <p className="text-[#6B5A52] font-medium mt-2 max-w-lg">
+            Nutrition that fits your goals, preferences, and everyday life.
+          </p>
         </div>
+        
+        {plan && (
+          <button 
+            onClick={generatePlan}
+            disabled={generating}
+            className="px-5 py-2.5 bg-white border border-[#E8DCD2] text-[#334234] text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#FAF7F2] transition-colors disabled:opacity-50"
+          >
+            {generating ? 'Regenerating...' : 'Regenerate Plan ↻'}
+          </button>
+        )}
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {meals.map((meal) => (
-            <div
-              key={meal.name}
-              className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#E8DCD2] hover:border-[#334234]/30 transition-all space-y-3 flex flex-col justify-between"
+      {error && (
+        <div className="bg-red-50 p-4 rounded-2xl border border-red-200 text-red-800 text-sm font-medium flex items-center gap-3">
+          <span>⚠️</span>
+          <span>{error}</span>
+          <button onClick={loadPlan} className="ml-auto underline font-bold">Retry</button>
+        </div>
+      )}
+
+      {/* NO PLAN STATE */}
+      {!plan && !error && (
+        <div className="bg-white rounded-[36px] border border-[#E8DCD2] p-10 md:p-16 text-center shadow-sm flex flex-col items-center max-w-3xl mx-auto">
+          <div className="text-5xl mb-6">🥗</div>
+          <h2 className="text-3xl font-serif font-bold text-[#1F1916] mb-3">Let's build your nutrition plan.</h2>
+          <p className="text-[#6B5A52] font-medium max-w-md mb-10 leading-relaxed">
+            Veyra will use your profile, goals, preferences, and lifestyle to create a plan made exactly for you.
+          </p>
+          
+          {generating ? (
+            <div className="space-y-4">
+              <div className="w-8 h-8 border-4 border-[#334234] border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="text-[#334234] font-bold text-sm uppercase tracking-wider animate-pulse">
+                Creating your personalized plan...
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={generatePlan}
+              className="px-8 py-4 bg-[#334234] text-white text-sm font-bold uppercase tracking-wider rounded-full hover:bg-[#253226] transition-all shadow-md flex items-center gap-2"
             >
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{meal.icon}</span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#708264]">{meal.name}</span>
+              Generate My Plan →
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* PLAN EXISTS STATE */}
+      {plan && !generating && (
+        <div className="space-y-10 animate-in fade-in duration-700">
+          
+          {/* Top Macros Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="bg-[#334234] text-white p-6 rounded-[28px] shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-300 mb-1">Calories</span>
+              <span className="text-3xl font-serif font-bold">{plan.targetCalories} <span className="text-sm font-sans font-normal text-emerald-100">kcal</span></span>
+            </div>
+            <div className="bg-white border border-[#E8DCD2] p-6 rounded-[28px] shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8A7970] mb-1">Protein</span>
+              <span className="text-3xl font-serif font-bold text-[#1F1916]">{plan.proteinGrams} <span className="text-sm font-sans font-normal text-[#8A7970]">g</span></span>
+            </div>
+            <div className="bg-white border border-[#E8DCD2] p-6 rounded-[28px] shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8A7970] mb-1">Carbs</span>
+              <span className="text-3xl font-serif font-bold text-[#1F1916]">{plan.carbsGrams} <span className="text-sm font-sans font-normal text-[#8A7970]">g</span></span>
+            </div>
+            <div className="bg-white border border-[#E8DCD2] p-6 rounded-[28px] shadow-sm flex flex-col justify-center">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8A7970] mb-1">Fat</span>
+              <span className="text-3xl font-serif font-bold text-[#1F1916]">{plan.fatGrams} <span className="text-sm font-sans font-normal text-[#8A7970]">g</span></span>
+            </div>
+          </div>
+
+          {/* Summary / Encouragement */}
+          {plan.planData?.summary && (
+            <div className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#E8DCD2]/60 flex items-start gap-4">
+              <span className="text-2xl mt-1">✨</span>
+              <p className="text-[#5C504A] font-medium leading-relaxed italic">"{plan.planData.summary}"</p>
+            </div>
+          )}
+
+          {/* Meals Section */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-serif font-bold text-[#1F1916]">Your personalized plan</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {plan.planData?.meals?.map((meal: any, idx: number) => (
+                <div key={idx} className="bg-white rounded-[32px] border border-[#E8DCD2] p-8 shadow-sm h-full flex flex-col">
+                  <div className="flex items-center gap-2 mb-6 border-b border-[#E8DCD2] pb-4">
+                    <span className="text-xl">
+                      {meal.name.toLowerCase().includes('breakfast') ? '🌅' 
+                        : meal.name.toLowerCase().includes('lunch') ? '☀️'
+                        : meal.name.toLowerCase().includes('snack') ? '🍎'
+                        : '🌙'}
+                    </span>
+                    <h3 className="text-xl font-serif font-bold text-[#1F1916]">{meal.name}</h3>
                   </div>
-                  <span className="text-[11px] font-mono text-[#8A7970]">{meal.time}</span>
+
+                  <div className="space-y-6 flex-1">
+                    {meal.suggestions?.length > 0 ? (
+                      meal.suggestions.map((sug: any, sIdx: number) => (
+                        <div key={sIdx} className="bg-[#FAF7F2] p-5 rounded-2xl border border-[#E8DCD2]/50">
+                          <h4 className="font-bold text-[#1F1916] mb-1">{sug.meal}</h4>
+                          <p className="text-xs text-[#6B5A52] mb-3 leading-relaxed">{sug.description}</p>
+                          
+                          <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-[#E8DCD2]/50">
+                            <span className="text-[10px] font-bold px-2 py-1 bg-white rounded border border-[#E8DCD2] text-[#5C504A]">
+                              ~{sug.approxCalories} kcal
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-1 bg-[#E8EFE6] rounded border border-[#708264]/20 text-[#2D452F]">
+                              P: {sug.protein}g
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-1 bg-white rounded border border-[#E8DCD2] text-[#5C504A]">
+                              C: {sug.carbs}g
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-1 bg-white rounded border border-[#E8DCD2] text-[#5C504A]">
+                              F: {sug.fat}g
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[#8A7970] italic">No suggestions provided.</p>
+                    )}
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
 
-                <h4 className="text-base font-serif font-bold text-[#1F1916]">{meal.title}</h4>
-                <p className="text-xs text-[#6B5A52] mt-1 leading-relaxed">{meal.highlights}</p>
+          {/* Additional Guidance (Hydration & Tips) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {plan.planData?.hydration && (
+              <div className="bg-[#E8F0F2] rounded-[32px] p-8 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-2xl">💧</span>
+                  <h3 className="text-lg font-serif font-bold text-[#1F1916]">Hydration Focus</h3>
+                </div>
+                <p className="text-sm font-bold text-[#1F1916] mb-1">{plan.planData.hydration.suggestion}</p>
+                <p className="text-xs text-[#5C504A]">{plan.planData.hydration.note}</p>
               </div>
+            )}
+            
+            {plan.planData?.tips?.length > 0 && (
+              <div className="bg-[#EADCD4]/20 rounded-[32px] p-8 shadow-sm border border-[#EADCD4]/40">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-2xl">💡</span>
+                  <h3 className="text-lg font-serif font-bold text-[#1F1916]">Wellness Tips</h3>
+                </div>
+                <ul className="space-y-3">
+                  {plan.planData.tips.map((tip: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-[#5C504A]">
+                      <span className="text-[#A09289] text-[10px] mt-1">✦</span>
+                      <span className="leading-relaxed">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
 
-              <div className="pt-3 border-t border-[#E8DCD2]/60 flex justify-between items-center text-xs">
-                <span className="font-bold text-[#1F1916]">{meal.calories}</span>
-                <span className="font-mono text-[11px] text-[#8A7970]">{meal.macros}</span>
+          {/* Health Snapshot */}
+          <div className="bg-white rounded-[32px] border border-[#E8DCD2] p-8 shadow-sm mt-8">
+            <h3 className="text-lg font-serif font-bold text-[#1F1916] mb-6">Your Nutrition Snapshot</h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl">
+                <span className="block text-[10px] uppercase font-bold text-[#8A7970] mb-1">Calculated BMI</span>
+                <span className="text-lg font-bold text-[#1F1916]">{plan.bmi}</span>
+                <span className="block text-[9px] text-[#A09289] mt-1 uppercase tracking-wider">General screening metric</span>
+              </div>
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl">
+                <span className="block text-[10px] uppercase font-bold text-[#8A7970] mb-1">BMR (Basal)</span>
+                <span className="text-lg font-bold text-[#1F1916]">{plan.bmr} <span className="text-xs font-normal">kcal</span></span>
+              </div>
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl">
+                <span className="block text-[10px] uppercase font-bold text-[#8A7970] mb-1">TDEE (Total)</span>
+                <span className="text-lg font-bold text-[#1F1916]">{plan.tdee} <span className="text-xs font-normal">kcal</span></span>
+              </div>
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl">
+                <span className="block text-[10px] uppercase font-bold text-[#8A7970] mb-1">Primary Goal</span>
+                <span className="text-base font-bold text-[#334234] capitalize">
+                  {/* Assuming plan contains user context eventually, otherwise fallback */}
+                  Wellness Goal
+                </span>
               </div>
             </div>
-          ))}
+            
+            {/* Safety Disclaimer */}
+            <div className="text-[10px] text-[#A09289] leading-relaxed max-w-3xl">
+              <strong className="text-[#8A7970]">Disclaimer:</strong> Veyra provides general nutrition and wellness guidance, not medical advice. If you have a medical condition, are pregnant, have a history of eating disorders, or need therapeutic nutrition, consult a qualified healthcare professional. Do not use this tool to create extreme calorie restrictions.
+            </div>
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }
-

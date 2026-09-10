@@ -21,6 +21,14 @@
       "@nestjs/core",
       "bcrypt",
       "@prisma/client"
+    ],
+    "approvedBuilds": [
+      "@google/genai",
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "protobufjs"
     ]
   }
 }
