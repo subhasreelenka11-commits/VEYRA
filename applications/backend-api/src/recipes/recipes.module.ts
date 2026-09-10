@@ -4,10 +4,10 @@ import { RecipesService } from './recipes.service';
 import { AiModule } from '../ai/ai.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NutritionModule } from '../nutrition/nutrition.module';
-import { AwsModule } from '../aws/aws.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [PrismaModule, AiModule, NutritionModule, AwsModule],
+  imports: [PrismaModule, AiModule, NutritionModule, StorageModule],
   controllers: [RecipesController],
   providers: [RecipesService],
 })

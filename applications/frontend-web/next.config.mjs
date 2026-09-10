@@ -46,6 +46,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'loremflickr.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5001',
+      },
     ],
   },
 };

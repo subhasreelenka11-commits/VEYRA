@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { NutritionCalculator } from '../nutrition/nutrition.calculator';
-import { AwsService } from '../aws/aws.service';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class RecipesService {
@@ -12,7 +12,7 @@ export class RecipesService {
     private prisma: PrismaService,
     private aiService: AiService,
     private calculator: NutritionCalculator,
-    private awsService: AwsService,
+    private storageService: StorageService,
   ) {}
 
   async getSavedRecipes(userId: string): Promise<any[]> {
@@ -78,9 +78,9 @@ export class RecipesService {
       try {
         this.logger.log(`Fetching/generating image buffer for recipe: ${recipe.title}`);
         const imageBuffer = await this.aiService.generateImageBuffer(recipe.title);
-        const s3Url = await this.awsService.uploadImage(imageBuffer, 'image/jpeg');
-        if (s3Url) {
-          recipe.image = s3Url;
+        const localUrl = await this.storageService.uploadImage(imageBuffer, 'image/jpeg');
+        if (localUrl) {
+          recipe.image = localUrl;
         }
       } catch (err: any) {
         this.logger.error(`Failed to generate/upload image for recipe ${recipe.title}: ${err.message}`);
