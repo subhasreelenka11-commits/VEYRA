@@ -9,6 +9,7 @@ import { NutritionModule } from './nutrition/nutrition.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { AiModule } from './ai/ai.module';
 import { GroomingModule } from './grooming/grooming.module';
+import { SkinAnalysisModule } from './skin-analysis/skin-analysis.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { GroomingModule } from './grooming/grooming.module';
     NutritionModule,
     RecipesModule,
     AiModule,
-    GroomingModule
+    GroomingModule,
+    SkinAnalysisModule
   ],
   controllers: [AppController],
   providers: [AppService],

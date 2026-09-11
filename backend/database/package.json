@@ -2,16 +2,17 @@
   "name": "database",
   "version": "0.1.0",
   "private": true,
+  "main": "index.ts",
   "scripts": {
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0"
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
-    "prisma": "^5.0.0",
+    "prisma": "^5.22.0",
     "typescript": "^5.0.0"
   }
 }

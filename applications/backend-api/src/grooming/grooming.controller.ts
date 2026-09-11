@@ -10,12 +10,12 @@ export class GroomingController {
   @Get('routine')
   getRoutine(@Req() req: any, @Query('date') date: string): Promise<any> {
     const today = date || new Date().toISOString().split('T')[0];
-    return this.groomingService.getRoutine(req.user.sub, today);
+    return this.groomingService.getRoutine(req.user.userId, today);
   }
 
   @Post('generate')
   generateRoutine(@Req() req: any): Promise<any> {
-    return this.groomingService.generateRoutine(req.user.sub);
+    return this.groomingService.generateRoutine(req.user.userId);
   }
 
   @Post('progress')
@@ -27,6 +27,6 @@ export class GroomingController {
     if (!date || !stepId) {
       throw new Error('date and stepId are required');
     }
-    return this.groomingService.toggleProgress(req.user.sub, date, stepId);
+    return this.groomingService.toggleProgress(req.user.userId, date, stepId);
   }
 }

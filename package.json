@@ -18,15 +18,11 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "bcrypt",
-      "@prisma/client"
-    ],
-    "approvedBuilds": [
       "@google/genai",
       "@nestjs/core",
       "@prisma/client",
       "@prisma/engines",
+      "bcrypt",
       "prisma",
       "protobufjs"
     ]

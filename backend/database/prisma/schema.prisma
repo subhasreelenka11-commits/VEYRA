@@ -106,6 +106,7 @@ model SkinScan {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   overallScore Int
+  summary      String?
   metrics      Json
   actives      Json
   
