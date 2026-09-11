@@ -65,22 +65,20 @@ export default function NutritionPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 pb-20">
-      
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+    <div className="font-sans pb-12 w-full mx-auto max-w-[1500px] space-y-12">
+      <div className="mb-8 pt-4 px-2 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="text-4xl font-serif font-bold text-[#1F1916] tracking-tight">Nutrition</h1>
-          <p className="text-[#6B5A52] font-medium mt-2 max-w-lg">
-            Nutrition that fits your goals, preferences, and everyday life.
-          </p>
+          <div className="flex items-center text-[#869188] text-[13px] font-medium mb-3 cursor-pointer hover:text-[#516454] transition-colors">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+            Nutrition
+          </div>
+          <h1 className="text-[32px] font-serif font-semibold text-[#1F2922] leading-tight">Your Nutrition Plan</h1>
         </div>
-        
         {plan && (
           <button 
             onClick={generatePlan}
             disabled={generating}
-            className="px-5 py-2.5 bg-white border border-[#E8DCD2] text-[#334234] text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#FAF7F2] transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-white border border-[#E8DCD2] text-[#334234] text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#FAF7F2] transition-colors disabled:opacity-50 mt-4"
           >
             {generating ? 'Regenerating...' : 'Regenerate Plan ↻'}
           </button>

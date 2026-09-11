@@ -152,78 +152,49 @@ export default function SkinAnalysisPage() {
   };
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* 1. Header Banner */}
-      <section className="bg-[#EFE7E0] rounded-[36px] border border-[#E2D4C8] p-8 sm:p-10 shadow-sm relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-800 text-sm">✨</span>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#708264]">
-                DERMATOLOGY AI LAB
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-[#1F1916] tracking-tight">
-              AI Skin Diagnostics
-            </h1>
-            <p className="text-xs sm:text-sm text-[#6B5A52] leading-relaxed">
-              Clinical-grade dermal intelligence. Our neural scan analyzes pore geometry, surface hydration, redness, and cellular vitality in seconds using real-time computer vision.
-            </p>
-          </div>
+    <div className="bg-[#FAF8F5] min-h-screen font-sans pb-12 w-full mx-auto max-w-[1500px]">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-8 pt-4 px-2">
+        <div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            {!isCameraActive ? (
-              <button
-                onClick={startCameraFlow}
-                disabled={isScanning}
-                className="bg-[#334234] text-white px-6 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#253226] transition-all shadow-md flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-              >
-                {isScanning ? (
-                  <>
-                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Analyzing Scan...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>📸</span>
-                    <span>Start New Scan</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handleCaptureAndScan}
-                className="bg-emerald-600 text-white px-6 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-emerald-700 transition-all shadow-lg flex items-center gap-2 cursor-pointer animate-pulse"
-              >
-                <span>✨</span>
-                <span>Capture & Analyze</span>
-              </button>
-            )}
-          </div>
+          <h1 className="text-[44px] font-serif text-[#1F2922] mb-3 leading-tight tracking-tight">Your Skin Analysis</h1>
+          <p className="text-[15px] text-[#5C6B61] leading-relaxed max-w-lg">Discover what your skin needs and get personalized<br/>recommendations for a healthier, brighter you.</p>
         </div>
-      </section>
+        
+        <div className="mt-6">
+          {!isCameraActive ? (
+            <button
+              onClick={startCameraFlow}
+              disabled={isScanning}
+              className="flex items-center gap-2.5 bg-transparent border border-[#E0E2DF] text-[#2C3E35] px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#F2EFEA] transition-all shadow-sm"
+            >
+              {isScanning ? (
+                <span className="w-4 h-4 border-2 border-[#2C3E35] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11v6m0-6l-3 3m3-3l3 3"></path></svg>
+              )}
+              {isScanning ? 'Analyzing...' : 'Upload New Photo'}
+            </button>
+          ) : (
+            <button
+              onClick={handleCaptureAndScan}
+              className="flex items-center gap-2.5 bg-[#516454] text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-[#435245] transition-all shadow-md"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              Capture Photo
+            </button>
+          )}
+        </div>
+      </div>
 
-      {/* 2. Main Scan & Metric Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left: Interactive Phone Scanner Mockup */}
-        <div className="lg:col-span-5 bg-white rounded-[36px] border border-[#E8DCD2] p-8 shadow-sm flex flex-col items-center text-center space-y-6">
-          <div className="w-full flex justify-between items-center border-b border-[#E8DCD2] pb-4">
-            <div className="text-left">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8A7970]">Active Scan Session</span>
-              <p className="text-xs font-bold text-[#1F1916]">High-Resolution Optical Sensor</p>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-[#E8EFE6] text-[10px] font-bold text-[#334234] border border-[#708264]/20">
-              {isCameraActive ? 'Live Camera Feed' : 'Neural Processing'}
-            </span>
-          </div>
-
-          {/* Phone Mockup Frame */}
-          <div className="relative bg-[#FAF7F2] rounded-[36px] border-4 border-stone-200 shadow-xl overflow-hidden w-full max-w-[290px] aspect-[9/14] flex flex-col justify-between transition-all duration-500">
-            {/* Camera notch */}
-            <div className="w-16 h-2 bg-stone-300 rounded-full mx-auto mt-3 shrink-0 z-20" />
-
-            {/* Viewport content */}
-            <div className="relative flex-1 w-full overflow-hidden bg-black rounded-lg mx-2 my-1">
+      {/* Main Unified White Card */}
+      <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-[#F0EFEB]">
+        <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-10">
+          
+          {/* LEFT COLUMN */}
+          <div className="flex flex-col space-y-6">
+            {/* User Image Area */}
+            <div className="relative w-full h-[420px] bg-[#EAE6DF] rounded-[24px] overflow-hidden">
               {isCameraActive ? (
                 <>
                   <video
@@ -233,296 +204,258 @@ export default function SkinAnalysisPage() {
                     muted
                     className="w-full h-full object-cover transform -scale-x-100"
                   />
-                  
-                  {/* Face Fitting Guide Overlay */}
-                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
-                    {/* The semi-transparent mask outside the oval */}
-                    <div className="absolute inset-0 bg-black/40 mix-blend-hard-light"></div>
-                    
-                    {/* The clear oval guide */}
-                    <div className="relative w-[180px] h-[240px] border-[3px] border-dashed border-emerald-400 rounded-[100px] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] overflow-hidden flex items-center justify-center">
-                      {/* Scanning line animation inside the oval */}
-                      <div className={`absolute inset-x-0 h-1 shadow-[0_0_15px_#10B981] animate-bounce top-0 ${alignmentPhase === 'aligned' ? 'bg-emerald-400' : 'bg-stone-300 shadow-[0_0_15px_#d6d3d1]'}`} />
-                      
-                      {/* Alignment Status Overlay */}
-                      {alignmentPhase === 'aligned' && (
-                        <div className="absolute inset-0 border-[4px] border-emerald-400 rounded-[100px] shadow-[inset_0_0_20px_#10B981] animate-pulse" />
-                      )}
-                    </div>
-                    
-                    <p className={`absolute bottom-10 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md transition-all ${
-                      alignmentPhase === 'aligned' ? 'bg-emerald-500/80 text-white shadow-lg' : 'bg-black/60 text-white'
-                    }`}>
-                      {alignmentPhase === 'aligning' ? 'Aligning Face... Keep Still' : 
-                       alignmentPhase === 'aligned' ? 'Perfect Fit! Capturing...' : 'Align Face in Oval'}
-                    </p>
-                  </div>
-                  
-                  {/* Hidden Canvas for capture */}
                   <canvas ref={canvasRef} className="hidden" />
+                  <div className="absolute inset-0 border-4 border-dashed border-white/30 rounded-[24px] m-4 pointer-events-none" />
+                  <p className="absolute bottom-6 left-0 right-0 text-center text-white text-xs bg-black/50 py-1.5 mx-12 rounded-full backdrop-blur-md">Align face in frame</p>
                 </>
               ) : (
                 <>
                   <Image
                     src="/images/veyra_hero_velera_portrait.png"
-                    alt="AI Face Scan Diagnostics"
+                    alt="User portrait"
                     fill
-                    className="object-cover object-top opacity-90 grayscale-[20%]"
-                    priority
+                    className="object-cover"
                   />
-
-                  {/* Scanning laser beam animation */}
-                  {isScanning && (
-                    <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10B981] animate-bounce top-1/3 z-30" />
-                  )}
-
-                  {/* Top Sensor Readout Badges */}
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-white font-mono flex items-center gap-1.5 z-20">
-                    <span className={`w-1.5 h-1.5 rounded-full ${isScanning ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
-                    {isScanning ? 'ANALYZING...' : 'FACIAL MATRIX'}
-                  </div>
-
-                  {/* Bottom Floating Score Pill */}
-                  {scanComplete && overallScore && (
-                    <div className="absolute bottom-4 inset-x-4 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-stone-200 shadow-md flex justify-between items-center z-20 animate-fade-in-up">
-                      <div className="text-left">
-                        <span className="block text-[9px] uppercase font-bold text-stone-400 tracking-wider">Overall Skin Index</span>
-                        <span className="text-base font-serif font-bold text-[#1F1916]">{overallScore} / 100</span>
+                  {/* Subtle bottom gradient for text readability */}
+                  <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  
+                  {scanComplete && (
+                    <div className="absolute bottom-5 left-5 right-5 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-[16px] p-3.5 flex items-center gap-3">
+                      <div className="bg-white rounded-full p-0.5 flex-shrink-0">
+                        <svg className="w-4 h-4 text-[#7A6B5D]" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
                       </div>
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
-                        Grade {overallScore >= 80 ? 'A' : overallScore >= 60 ? 'B' : 'C'}
-                      </span>
+                      <div>
+                        <p className="text-[12px] font-bold mb-0.5 leading-none">Analysis Complete</p>
+                        <p className="text-[10px] text-white/80 font-medium leading-none">{history.length > 0 ? new Date(history[0].createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Sep 11, 2025 - 10:24 AM'}</p>
+                      </div>
                     </div>
                   )}
                 </>
               )}
             </div>
 
-            {/* Bottom bar indicator */}
-            <div className="w-20 h-1 bg-stone-300 rounded-full mx-auto mb-2 mt-2 shrink-0 z-20" />
-          </div>
+            {/* Skin Type Block */}
+            <div className="bg-[#FAF8F5] rounded-[24px] p-5 flex items-center gap-4">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center border border-[#DCD9D4] rounded-full text-[#516454] bg-transparent">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"></path></svg>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#5C6B61] font-medium tracking-wide mb-1">Your Skin Type</p>
+                <h3 className="text-[17px] font-serif text-[#1F2922] font-semibold mb-0.5">Combination</h3>
+                <p className="text-[12px] text-[#869188]">Oily T-zone, Normal cheeks</p>
+              </div>
+            </div>
 
-          <p className="text-xs text-[#6B5A52] leading-relaxed max-w-xs">
-            {isCameraActive 
-              ? "Ensure your face is well-lit and fits securely within the guide before capturing."
-              : "Calibrated against over 25,000 clinical dermatological benchmarks. Next recommended diagnostic: in 7 days."
-            }
-          </p>
-        </div>
-
-        {/* Right: Comprehensive Clinical Metric Report */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Navigation Pills */}
-          <div className="flex items-center gap-2 bg-[#FAF7F2] p-1.5 rounded-full border border-[#E8DCD2] w-fit">
-            <button
-              onClick={() => setActiveMetricTab('overview')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeMetricTab === 'overview'
-                  ? 'bg-[#334234] text-white shadow-sm'
-                  : 'text-[#6B5A52] hover:text-[#1F1916]'
-              }`}
-            >
-              Biomarker Overview
-            </button>
-            <button
-              onClick={() => setActiveMetricTab('ingredients')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeMetricTab === 'ingredients'
-                  ? 'bg-[#334234] text-white shadow-sm'
-                  : 'text-[#6B5A52] hover:text-[#1F1916]'
-              }`}
-            >
-              Prescribed Actives
-            </button>
-            <button
-              onClick={() => setActiveMetricTab('history')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeMetricTab === 'history'
-                  ? 'bg-[#334234] text-white shadow-sm'
-                  : 'text-[#6B5A52] hover:text-[#1F1916]'
-              }`}
-            >
-              Scan History
-            </button>
-          </div>
-
-          {/* TAB 1: OVERVIEW */}
-          {activeMetricTab === 'overview' && (
-            <div className="space-y-4">
-              <div className="bg-white rounded-[32px] border border-[#E8DCD2] p-7 shadow-sm space-y-6">
-                <div className="flex justify-between items-center border-b border-[#E8DCD2] pb-4">
-                  <div>
-                    <h3 className="text-xl font-serif font-bold text-[#1F1916]">Dermal Parameters</h3>
-                    <p className="text-xs text-[#8A7970]">{scanComplete ? 'Real-time AI optical evaluation' : 'Awaiting Scan...'}</p>
-                  </div>
-                  {scanComplete && (
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                      Confidence: 98.4%
-                    </span>
-                  )}
+            {/* Key Concerns */}
+            <div className="space-y-4 pt-2">
+              <h4 className="text-[14px] font-bold text-[#1F2922]">Key Concerns</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 bg-[#FFF7F5] p-2.5 rounded-[16px] text-[11px] text-[#1F2922] font-semibold">
+                  <span className="text-[#E76F51] bg-[#FFE9E3] p-1.5 rounded-full"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg></span>
+                  Acne & Breakouts
                 </div>
+                <div className="flex items-center gap-2 bg-[#FFF9F0] p-2.5 rounded-[16px] text-[11px] text-[#1F2922] font-semibold">
+                  <span className="text-[#F4A261] bg-[#FFECCC] p-1.5 rounded-full"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg></span>
+                  Uneven Skin Tone
+                </div>
+                <div className="flex items-center gap-2 bg-[#F6F5F8] p-2.5 rounded-[16px] text-[11px] text-[#1F2922] font-semibold">
+                  <span className="text-[#8D7DA3] bg-[#E7E2EE] p-1.5 rounded-full"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></span>
+                  Large Pores
+                </div>
+                <div className="flex items-center gap-2 bg-[#F1F6F8] p-2.5 rounded-[16px] text-[11px] text-[#1F2922] font-semibold">
+                  <span className="text-[#598CA0] bg-[#E0EDF2] p-1.5 rounded-full"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></span>
+                  Mild Dark Circles
+                </div>
+              </div>
+            </div>
 
-                {scanComplete && metrics.length > 0 ? (
-                  <div className="space-y-5">
-                    {summary && (
-                      <div className="p-4 bg-[#E8EFE6]/50 rounded-2xl border border-[#708264]/20 text-xs text-[#334234] leading-relaxed italic shadow-sm">
-                        "{summary}"
-                      </div>
-                    )}
-                    {metrics.map((m: any) => {
-                      // Correctly handle "Compromised" status so it maps to amber/orange
-                      const isBad = m.status?.includes('Risk') || m.status?.includes('Attention') || m.status?.includes('Sub-optimal') || m.status?.includes('Compromised');
-                      const hexColor = m.colorHex || (isBad ? '#F59E0B' : '#10B981');
-                      
-                      return (
-                        <div key={m.name} className="space-y-1.5">
-                          <div className="flex justify-between items-center text-xs">
-                            <span className="font-bold text-[#1F1916]">{m.name}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[11px] font-semibold text-[#8A7970]">{m.status}</span>
-                              <span className="font-mono font-bold" style={{ color: hexColor }}>{m.score}%</span>
-                            </div>
-                          </div>
-                          <div className="w-full h-2.5 bg-[#FAF7F2] rounded-full overflow-hidden border border-[#E8DCD2]/60">
-                            <div
-                              className="h-full rounded-full transition-all duration-1000 ease-out"
-                              style={{ width: `${m.score}%`, backgroundColor: hexColor }}
-                            />
-                          </div>
-                          <p className="text-[11px] text-[#8A7970]">{m.note}</p>
-                        </div>
-                      );
-                    })}
+            {/* Button */}
+            <button className="w-full bg-[#516454] text-white py-4 rounded-full text-[13px] font-semibold hover:bg-[#435245] transition-all flex justify-between items-center px-6 mt-4 shadow-sm">
+              <span className="mx-auto ml-16">View Detailed Report</span>
+              <span className="bg-white/20 rounded-full p-1"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg></span>
+            </button>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="flex flex-col space-y-6">
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-2 w-full border-b border-[#F0EFEB] pb-5">
+              <div className="bg-[#FAF8F5] rounded-full p-1 flex">
+                <button className="bg-[#516454] text-white px-6 py-2 rounded-full text-[13px] font-medium shadow-sm">Overview</button>
+                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Skin Concerns</button>
+                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Recommendations</button>
+                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Products</button>
+                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Daily Routine</button>
+              </div>
+            </div>
+
+            {/* Health Score Box */}
+            <div className="border border-[#F0EFEB] rounded-[24px] p-7 flex flex-col md:flex-row gap-8 md:items-center">
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-6">
+                  <h3 className="text-[20px] font-serif text-[#1F2922]">Skin Health Score</h3>
+                  <svg className="w-3.5 h-3.5 text-[#B8C2BC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                
+                <div className="flex items-center gap-8">
+                  <div className="relative w-[110px] h-[110px] flex-shrink-0">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="44" stroke="#F4F6F4" strokeWidth="8" fill="none" />
+                      <circle cx="50" cy="50" r="44" stroke="#516454" strokeWidth="8" fill="none" strokeDasharray="276.46" strokeDashoffset={276.46 - (276.46 * (overallScore || 0)) / 100} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-[34px] font-serif text-[#1F2922] leading-none mb-1">{overallScore || '-'}</span>
+                      <span className="text-[11px] text-[#869188] font-medium border-t border-[#F0EFEB] pt-1 w-10 text-center">/100</span>
+                    </div>
                   </div>
-                ) : (
-                  <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
-                    <span className="text-3xl">{isScanning ? '⏳' : '📸'}</span>
-                    <p className="text-xs font-bold text-[#1F1916]">{isScanning ? 'Analyzing Neural Feed...' : 'No Active Scan'}</p>
-                    <p className="text-xs text-[#8A7970] max-w-xs">
-                      {isScanning 
-                        ? 'Extracting biomarkers and cross-referencing clinical dermatological data. This takes a few seconds.'
-                        : 'Capture a new scan using the button above to generate your real-time biomarker analysis.'}
+                  <div>
+                    <h3 className="text-[18px] font-serif text-[#1F2922] font-bold mb-2">{overallScore && overallScore >= 80 ? 'Good' : overallScore && overallScore >= 60 ? 'Fair' : 'Needs Attention'}</h3>
+                    <p className="text-[12px] text-[#5C6B61] leading-relaxed max-w-[240px]">
+                      {summary || 'Your skin is in good condition! With the right care and consistency, it can look even healthier and more radiant.'}
                     </p>
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Routine Action Callout */}
-              {scanComplete && (
-                <div className="bg-[#FAF7F2] rounded-[28px] border border-[#E8DCD2] p-6 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <span className="text-3xl p-3 bg-white rounded-2xl border border-[#E8DCD2]">🌿</span>
-                    <div>
-                      <h4 className="text-sm font-serif font-bold text-[#1F1916]">Synchronize Daily Routine</h4>
-                      <p className="text-xs text-[#6B5A52]">Update your morning and evening skincare steps based on today's diagnostics.</p>
-                    </div>
+              {/* Key Strengths */}
+              <div className="bg-[#F6F7F5] rounded-[20px] p-6 md:w-[260px] flex-shrink-0">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="text-[#516454] bg-[#EBECE9] p-1.5 rounded-full">
+                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                   </div>
-                  <Link
-                    href="/grooming"
-                    className="px-5 py-2.5 bg-[#334234] text-white text-xs font-bold uppercase tracking-wider rounded-full hover:bg-[#253226] transition-all shrink-0"
-                  >
-                    View Routine →
-                  </Link>
+                  <h4 className="text-[14px] font-bold text-[#1F2922]">Key Strengths</h4>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 2: PRESCRIBED ACTIVES */}
-          {activeMetricTab === 'ingredients' && (
-            <div className="bg-white rounded-[32px] border border-[#E8DCD2] p-7 shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-[#E8DCD2] pb-4">
-                <div>
-                  <h3 className="text-xl font-serif font-bold text-[#1F1916]">Curated Active Ingredients</h3>
-                  <p className="text-xs text-[#8A7970]">Selected by AI based on your barrier status</p>
-                </div>
-                {scanComplete && (
-                  <span className="text-xs font-bold text-[#334234]">{recommendedActives.length} Targeted Actives</span>
-                )}
+                <ul className="space-y-4">
+                  <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
+                    <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    Good hydration levels
+                  </li>
+                  <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
+                    <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    Healthy skin barrier
+                  </li>
+                  <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
+                    <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    Even skin texture
+                  </li>
+                </ul>
               </div>
+            </div>
 
-              {scanComplete && recommendedActives.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {recommendedActives.map((active: any) => (
-                      <div key={active.name} className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#E8DCD2] space-y-2 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-start gap-2 mb-1">
-                            <h4 className="text-xs font-bold text-[#1F1916]">{active.name}</h4>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-                              {active.match}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-[#6B5A52] leading-relaxed">{active.purpose}</p>
-                        </div>
-                        <div className="pt-2 border-t border-[#E8DCD2]/60 flex justify-between items-center text-[10px]">
-                          <span className="text-[#8A7970] font-semibold">Recommended Application</span>
-                          <span className="font-bold text-[#334234]">{active.type}</span>
-                        </div>
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {metrics.length > 0 ? metrics.map((m: any, i: number) => {
+                 const getIcon = (name: string) => {
+                   if(name.toLowerCase().includes('hydra')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16a4 4 0 100-8 4 4 0 000 8z"></path></svg>;
+                   if(name.toLowerCase().includes('oil')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>;
+                   if(name.toLowerCase().includes('pore')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+                   if(name.toLowerCase().includes('textur')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>;
+                   if(name.toLowerCase().includes('dark')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>;
+                   return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>;
+                 };
+                 
+                 return (
+                  <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 flex items-start gap-4">
+                    <div className="text-[#1F2922] mt-0.5">
+                      {getIcon(m.name)}
+                    </div>
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <h4 className="text-[13px] font-bold text-[#1F2922] mb-0.5">{m.name}</h4>
+                        <span className="text-[11px] text-[#5C6B61] block">{m.score}/100</span>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-start gap-3 text-xs text-amber-900">
-                    <span className="text-base">⚠️</span>
-                    <div>
-                      <span className="font-bold block">AI Warning:</span>
-                      <span>Ensure you patch test new actives. Based on your scan, avoid high concentration exfoliants today.</span>
+                      <div className="w-full h-1.5 bg-[#F4F6F4] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#516454] rounded-full" style={{ width: `${m.score}%` }} />
+                      </div>
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
-                  <p className="text-xs text-[#8A7970]">Complete a scan to see your AI-prescribed active ingredients.</p>
-                </div>
+                 );
+              }) : (
+                // Skeleton loading / placeholders
+                Array(6).fill(0).map((_, i) => (
+                  <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 flex items-start gap-4 opacity-50">
+                    <div className="w-5 h-5 rounded bg-[#EAE6DF]" />
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <div className="w-24 h-4 bg-[#EAE6DF] rounded mb-1.5" />
+                        <div className="w-12 h-3 bg-[#EAE6DF] rounded" />
+                      </div>
+                      <div className="w-full h-1.5 bg-[#F4F6F4] rounded-full" />
+                    </div>
+                  </div>
+                ))
               )}
             </div>
-          )}
 
-          {/* TAB 3: SCAN HISTORY */}
-          {activeMetricTab === 'history' && (
-            <div className="bg-white rounded-[32px] border border-[#E8DCD2] p-7 shadow-sm space-y-6">
-              <div className="flex justify-between items-center border-b border-[#E8DCD2] pb-4">
+            {/* Recommendations Block */}
+            <div className="bg-[#FAF8F5] border border-[#F0EFEB] rounded-[24px] p-7">
+              <div className="flex items-start gap-3 mb-6">
+                <div className="text-[#D4A373] mt-1">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                </div>
                 <div>
-                  <h3 className="text-xl font-serif font-bold text-[#1F1916]">Diagnostic Timeline</h3>
-                  <p className="text-xs text-[#8A7970]">Past evaluations and barrier progression</p>
+                  <h3 className="text-[16px] font-serif text-[#1F2922] font-semibold mb-0.5">Your Personalized Recommendations</h3>
+                  <p className="text-[12px] text-[#869188]">Simple steps for healthier, clearer and glowing skin.</p>
                 </div>
               </div>
 
-              {history.length > 0 ? (
-                <div className="space-y-3">
-                  {history.map((item: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-[#FAF7F2] border border-[#E8DCD2] hover:bg-[#EADBCE]/30 transition-all">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#334234] text-white flex items-center justify-center text-xs font-serif font-bold">
-                          {item.overallScore}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#1F1916]">
-                            {new Date(item.createdAt).toLocaleString(undefined, {
-                              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                            })}
-                          </p>
-                          <p className="text-[11px] text-[#6B5A52] line-clamp-1">{item.metrics?.[0]?.note || 'Scan completed'}</p>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white text-[#334234] border border-[#E8DCD2]">
-                        {item.overallScore >= 80 ? 'Optimal' : item.overallScore >= 60 ? 'Good' : 'Fair'}
-                      </span>
-                    </div>
-                  ))}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="space-y-4">
+                  <div className="text-[#1F2922]">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                  </div>
+                  <h4 className="text-[12px] font-bold text-[#1F2922]">Skincare Routine</h4>
+                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
+                    <li className="pl-1">Gentle cleanser (AM & PM)</li>
+                    <li className="pl-1">Non-comedogenic moisturizer</li>
+                    <li className="pl-1">Broad spectrum sunscreen</li>
+                  </ul>
                 </div>
-              ) : (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
-                  <p className="text-xs text-[#8A7970]">Your diagnostic timeline is empty. Take your first scan today!</p>
+                <div className="space-y-4">
+                  <div className="text-[#1F2922]">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                  </div>
+                  <h4 className="text-[12px] font-bold text-[#1F2922]">Lifestyle Tips</h4>
+                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
+                    <li className="pl-1">Stay hydrated (2.5-3L/day)</li>
+                    <li className="pl-1">Get 7-8 hours sleep</li>
+                    <li className="pl-1">Manage stress</li>
+                  </ul>
                 </div>
-              )}
+                <div className="space-y-4">
+                  <div className="text-[#1F2922]">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                  </div>
+                  <h4 className="text-[12px] font-bold text-[#1F2922]">Diet Recommendations</h4>
+                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
+                    <li className="pl-1">More fruits & vegetables</li>
+                    <li className="pl-1">Omega-3 rich foods</li>
+                    <li className="pl-1">Reduce sugar & processed food</li>
+                  </ul>
+                </div>
+                <div className="space-y-4">
+                  <div className="text-[#1F2922]">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                  </div>
+                  <h4 className="text-[12px] font-bold text-[#1F2922]">Home Remedies</h4>
+                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
+                    <li className="pl-1">Aloe vera for hydration</li>
+                    <li className="pl-1">Green tea for inflammation</li>
+                    <li className="pl-1">Honey & yogurt for glow</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-[#F1F4F1] rounded-xl p-4 flex gap-4 items-center">
+                <svg className="w-5 h-5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                <p className="text-[11px] text-[#516454] font-medium leading-relaxed">Remember: Results may vary based on your lifestyle, diet and consistency. For best results, follow your personalized routine and check back for updates.</p>
+              </div>
             </div>
-          )}
+            
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-

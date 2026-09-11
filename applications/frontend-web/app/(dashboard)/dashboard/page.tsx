@@ -88,7 +88,16 @@ export default function Dashboard() {
   const completedCount = habits.filter(h => h.done).length;
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="font-sans pb-12 w-full mx-auto max-w-[1500px] space-y-12">
+      <div className="mb-8 pt-4 px-2 flex justify-between items-start">
+        <div>
+          <div className="flex items-center text-[#869188] text-[13px] font-medium mb-3 cursor-pointer hover:text-[#516454] transition-colors">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+            Dashboard
+          </div>
+          <h1 className="text-[32px] font-serif font-semibold text-[#1F2922] leading-tight">Your Wellness Overview</h1>
+        </div>
+      </div>
       {/* 1. HERO WELCOME BANNER */}
       <section className="relative overflow-hidden bg-[#EFE7E0] rounded-[36px] border border-[#E2D4C8] p-8 sm:p-10 shadow-sm">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
