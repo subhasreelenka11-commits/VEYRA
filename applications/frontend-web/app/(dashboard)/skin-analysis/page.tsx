@@ -12,6 +12,7 @@ export default function SkinAnalysisPage() {
   const [scanComplete, setScanComplete] = useState(false);
   const [activeTab, setActiveTab] = useState('Overview');
   const [metrics, setMetrics] = useState<any[]>([]);
+  const [concerns, setConcerns] = useState<any[]>([]);
   const [recommendedActives, setRecommendedActives] = useState<any[]>([]);
   const [overallScore, setOverallScore] = useState<number | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export default function SkinAnalysisPage() {
             const latest = data[0];
             setMetrics(latest.metrics || []);
             setRecommendedActives(latest.actives || []);
+            setConcerns(latest.concerns || []);
             setOverallScore(latest.overallScore);
             setSummary(latest.summary);
             setScanComplete(true);
@@ -169,8 +171,9 @@ export default function SkinAnalysisPage() {
       setRecommendedActives(data.actives);
       setOverallScore(data.overallScore);
       setSummary(data.summary);
+      setConcerns(data.concerns || []);
       setScanComplete(true);
-      setActiveMetricTab('overview');
+      setActiveTab('Overview');
       loadHistory(); // Refresh history
     } catch (err) {
       console.error('Failed to scan skin', err);
@@ -432,12 +435,7 @@ export default function SkinAnalysisPage() {
                   <h3 className="text-[20px] font-serif text-[#1F2922]">Skin Concerns Details</h3>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
-                  {[
-                    { name: 'Acne & Breakouts', level: 'Moderate', score: 65, color: '#E76F51', text: 'You have active inflammation mainly on the cheeks and chin.' },
-                    { name: 'Uneven Skin Tone', level: 'Mild', score: 40, color: '#F4A261', text: 'Slight hyperpigmentation detected around the mouth.' },
-                    { name: 'Large Pores', level: 'Moderate', score: 70, color: '#8D7DA3', text: 'Visible pores concentrated on the T-zone.' },
-                    { name: 'Dark Circles', level: 'Mild', score: 35, color: '#598CA0', text: 'Faint under-eye shadows, likely due to fatigue.' }
-                  ].map((concern, i) => (
+                  {concerns.length > 0 ? concerns.map((concern, i) => (
                     <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 bg-white">
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
@@ -457,7 +455,11 @@ export default function SkinAnalysisPage() {
                         View recommendation →
                       </button>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-sm text-[#869188] border border-[#F0EFEB] rounded-[16px] p-5 text-center bg-[#FAF8F5]">
+                      No specific skin concerns detected in this scan.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -593,49 +595,87 @@ export default function SkinAnalysisPage() {
             {/* TAB CONTENT: Daily Routine */}
             {activeTab === 'Daily Routine' && (
               <div className="space-y-8 animate-in fade-in duration-300">
-                <div>
-                  <h3 className="text-[20px] font-serif text-[#1F2922] flex items-center gap-2 mb-4">
-                    <span className="text-[#F4A261]">☀</span> Morning Routine
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { step: 1, name: 'Cleanser', action: 'Wash with gentle circular motions' },
-                      { step: 2, name: 'Moisturizer', action: 'Apply to damp skin to lock in hydration' },
-                      { step: 3, name: 'Sunscreen', action: 'Apply generous amount to face & neck' }
-                    ].map(r => (
-                      <div key={r.step} className="flex items-center gap-4 border border-[#F0EFEB] rounded-[16px] p-4 bg-white">
-                        <div className="w-6 h-6 rounded-full bg-[#EAE6DF] text-[#516454] text-[11px] font-bold flex items-center justify-center flex-shrink-0">{r.step}</div>
-                        <div className="flex-1">
-                          <h4 className="text-[13px] font-bold text-[#1F2922]">{r.name}</h4>
-                          <p className="text-[11px] text-[#869188]">{r.action}</p>
-                        </div>
-                        <button className="text-[11px] font-bold text-[#516454] px-3 py-1.5 rounded-full border border-[#E0E2DF] hover:bg-[#FAF8F5]">Mark ✓</button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {(() => {
+                  const products = recommendations.filter(r => r.category === 'SKINCARE').map(r => {
+                    const parsed = r.instructions ? JSON.parse(r.instructions) : {};
+                    return { type: (r.recommendationType || '').toUpperCase(), name: parsed.name, brand: parsed.brand, reason: r.reason || r.description || '' };
+                  });
+                  
+                  const getProduct = (types: string[]) => {
+                    for (const t of types) {
+                      const p = products.find(p => p.type.includes(t));
+                      if (p) return {
+                        name: p.brand && p.brand !== 'Veyra Recommendation' ? `${p.brand.toUpperCase()} • ${p.type.replace('_', ' ')}` : p.type.replace('_', ' '),
+                        action: p.name
+                      };
+                    }
+                    return null;
+                  };
 
-                <div>
-                  <h3 className="text-[20px] font-serif text-[#1F2922] flex items-center gap-2 mb-4">
-                    <span className="text-[#8D7DA3]">🌙</span> Evening Routine
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { step: 1, name: 'Cleanser', action: 'Double cleanse to remove SPF/dirt' },
-                      { step: 2, name: 'Treatment', action: 'Apply BHA on T-zone only' },
-                      { step: 3, name: 'Moisturizer', action: 'Layer over dry skin' }
-                    ].map(r => (
-                      <div key={r.step} className="flex items-center gap-4 border border-[#F0EFEB] rounded-[16px] p-4 bg-white">
-                        <div className="w-6 h-6 rounded-full bg-[#EAE6DF] text-[#516454] text-[11px] font-bold flex items-center justify-center flex-shrink-0">{r.step}</div>
-                        <div className="flex-1">
-                          <h4 className="text-[13px] font-bold text-[#1F2922]">{r.name}</h4>
-                          <p className="text-[11px] text-[#869188]">{r.action}</p>
+                  const getStep = (types: string[], defaultName: string, defaultAction: string, hiddenIfMissing: boolean = false) => {
+                    const p = getProduct(types);
+                    if (!p && hiddenIfMissing) return { hidden: true, step: 0, name: '', action: '' };
+                    return {
+                      name: p ? p.name : defaultName,
+                      action: p ? p.action : defaultAction,
+                      hidden: false
+                    };
+                  };
+
+                  const morningRoutine = [
+                    getStep(['CLEANSER', 'WASH'], 'Cleanser', 'Wash with gentle circular motions'),
+                    getStep(['SERUM'], 'Serum', 'Apply to damp skin and pat gently', true),
+                    getStep(['MOISTURIZER', 'CREAM', 'LOTION'], 'Moisturizer', 'Apply to lock in hydration'),
+                    getStep(['SUNSCREEN', 'SPF', 'BLOCK'], 'Sunscreen', 'Apply generous amount to face & neck')
+                  ].filter(r => !r.hidden).map((r, i) => ({ ...r, step: i + 1 }));
+
+                  const eveningRoutine = [
+                    getStep(['CLEANSER', 'WASH'], 'Cleanser', 'Double cleanse to remove SPF/dirt'),
+                    getStep(['TREATMENT', 'EXFOLIAN', 'PEEL'], 'Treatment', 'Apply to targeted areas', true),
+                    getStep(['EYE'], 'Eye Cream', 'Dab gently around orbital bone', true),
+                    getStep(['MOISTURIZER', 'CREAM', 'LOTION'], 'Moisturizer', 'Layer over dry skin to seal actives')
+                  ].filter(r => !r.hidden).map((r, i) => ({ ...r, step: i + 1 }));
+
+                  return (
+                    <>
+                      <div>
+                        <h3 className="text-[20px] font-serif text-[#1F2922] flex items-center gap-2 mb-4">
+                          <span className="text-[#F4A261]">☀</span> Morning Routine
+                        </h3>
+                        <div className="space-y-3">
+                          {morningRoutine.map(r => (
+                            <div key={r.step} className="flex items-center gap-4 border border-[#F0EFEB] rounded-[16px] p-4 bg-white">
+                              <div className="w-6 h-6 rounded-full bg-[#EAE6DF] text-[#516454] text-[11px] font-bold flex items-center justify-center flex-shrink-0">{r.step}</div>
+                              <div className="flex-1">
+                                <h4 className="text-[13px] font-bold text-[#1F2922]">{r.name}</h4>
+                                <p className="text-[11px] text-[#869188]">{r.action}</p>
+                              </div>
+                              <button className="text-[11px] font-bold text-[#516454] px-3 py-1.5 rounded-full border border-[#E0E2DF] hover:bg-[#FAF8F5]">Mark ✓</button>
+                            </div>
+                          ))}
                         </div>
-                        <button className="text-[11px] font-bold text-[#516454] px-3 py-1.5 rounded-full border border-[#E0E2DF] hover:bg-[#FAF8F5]">Mark ✓</button>
                       </div>
-                    ))}
-                  </div>
-                </div>
+
+                      <div>
+                        <h3 className="text-[20px] font-serif text-[#1F2922] flex items-center gap-2 mb-4">
+                          <span className="text-[#8D7DA3]">🌙</span> Evening Routine
+                        </h3>
+                        <div className="space-y-3">
+                          {eveningRoutine.map(r => (
+                            <div key={r.step} className="flex items-center gap-4 border border-[#F0EFEB] rounded-[16px] p-4 bg-white">
+                              <div className="w-6 h-6 rounded-full bg-[#EAE6DF] text-[#516454] text-[11px] font-bold flex items-center justify-center flex-shrink-0">{r.step}</div>
+                              <div className="flex-1">
+                                <h4 className="text-[13px] font-bold text-[#1F2922]">{r.name}</h4>
+                                <p className="text-[11px] text-[#869188]">{r.action}</p>
+                              </div>
+                              <button className="text-[11px] font-bold text-[#516454] px-3 py-1.5 rounded-full border border-[#E0E2DF] hover:bg-[#FAF8F5]">Mark ✓</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
 

@@ -34,6 +34,7 @@ export class SkinAnalysisService {
         summary: analysis.summary || null,
         metrics: parsedMetrics,
         actives: analysis.actives || [],
+        concerns: analysis.concerns || null,
       },
     });
 
@@ -90,49 +91,110 @@ export class SkinAnalysisService {
 
     const createdRecommendations = [];
 
-    // 3. Match Skincare requirements to Real Products via backend engine
-    const matchedSkincare = await this.productMatchingService.matchProducts(aiRecommendations, userProfile, latestScan);
-
-    for (const match of matchedSkincare) {
-      const rec = match.recommendation;
-      const product = match.product; // Can be null if no match
-
-      const created = await this.prisma.skinRecommendation.create({
-        data: {
-          skinAnalysisId: latestScan.id,
-          category: 'SKINCARE',
-          recommendationType: rec.type,
-          title: product ? product.name : `Recommended: ${rec.type}`,
-          description: product ? `${product.brand} - ${product.description}` : rec.instructions,
-          reason: rec.reason,
-          priority: rec.priority || 'NORMAL',
-          requirements: rec.requirements || [],
-          // We can attach product details in requirements or a generic JSON field if needed for UI
-          // Using requirements field to store match info temporarily for UI
-          instructions: product ? JSON.stringify(product) : null,
-        }
-      });
-      createdRecommendations.push(created);
+    // Save Skincare recommendations
+    const skincareList = aiRecommendations.recommendations || aiRecommendations.skincare || aiRecommendations.products || [];
+    if (Array.isArray(skincareList)) {
+      for (const rec of skincareList) {
+        const title = rec.name || rec.title || rec.category || 'Product Recommendation';
+        const created = await this.prisma.skinRecommendation.create({
+          data: {
+            skinAnalysisId: latestScan.id,
+            category: 'SKINCARE',
+            recommendationType: rec.category || rec.type || 'PRODUCT',
+            title: title,
+            description: rec.description || rec.name || title,
+            reason: rec.reason || 'Recommended based on your skin profile',
+            priority: rec.priority || 'NORMAL',
+            instructions: JSON.stringify({
+              name: title,
+              brand: rec.brand || 'Veyra Recommendation',
+              currency: '',
+              price: rec.price || 'N/A',
+              imageUrl: (() => {
+                const typeUpper = (rec.category || rec.type || title || '').toUpperCase();
+                if (typeUpper.includes('CLEANSER') || typeUpper.includes('WASH')) return '/products/cleanser.jpg';
+                if (typeUpper.includes('SERUM')) return '/products/serum.jpg';
+                if (typeUpper.includes('MOISTURIZER') || typeUpper.includes('CREAM') || typeUpper.includes('LOTION')) return '/products/moisturizer.jpg';
+                if (typeUpper.includes('SUNSCREEN') || typeUpper.includes('SPF') || typeUpper.includes('BLOCK')) return '/products/sunscreen.jpg';
+                if (typeUpper.includes('TONER')) return '/products/toner.jpg';
+                if (typeUpper.includes('EYE')) return '/products/eye_cream.jpg';
+                if (typeUpper.includes('TREATMENT') || typeUpper.includes('MASK') || typeUpper.includes('EXFOLIANT') || typeUpper.includes('PEEL')) return '/products/treatment.jpg';
+                return null;
+              })()
+            })
+          }
+        });
+        createdRecommendations.push(created);
+      }
     }
 
-    // 4. Save Lifestyle, Diet, and Home Remedies
-    const categories = ['lifestyle', 'diet', 'homeRemedies'];
-    for (const cat of categories) {
-      if (aiRecommendations[cat] && Array.isArray(aiRecommendations[cat])) {
-        for (const rec of aiRecommendations[cat]) {
-          const created = await this.prisma.skinRecommendation.create({
-            data: {
-              skinAnalysisId: latestScan.id,
-              category: cat.toUpperCase(),
-              recommendationType: rec.type || cat.toUpperCase(),
-              title: rec.title,
-              description: rec.description,
-              reason: rec.reason,
-              priority: 'NORMAL',
-            }
-          });
-          createdRecommendations.push(created);
-        }
+    // Helper to safely extract string values from either string or object
+    const extractFields = (rec: any, defaultTitle: string) => {
+      if (typeof rec === 'string') return { title: defaultTitle, description: rec, reason: 'General wellness recommendation based on your skin profile.' };
+      return {
+        title: rec.title || rec.name || defaultTitle,
+        description: rec.description || rec.title || rec.name || JSON.stringify(rec),
+        reason: rec.reason || 'General wellness recommendation based on your skin profile.'
+      };
+    };
+
+    // Save Home Care
+    const homeCareList = aiRecommendations.homeCare || aiRecommendations.homeRemedies || [];
+    if (Array.isArray(homeCareList)) {
+      for (const rec of homeCareList) {
+        const fields = extractFields(rec, 'Home Care Advice');
+        const created = await this.prisma.skinRecommendation.create({
+          data: {
+            skinAnalysisId: latestScan.id,
+            category: 'HOMEREMEDIES',
+            recommendationType: rec.type || 'DIY',
+            title: fields.title,
+            description: fields.description,
+            reason: fields.reason,
+            priority: rec.priority || 'NORMAL',
+          }
+        });
+        createdRecommendations.push(created);
+      }
+    }
+
+    // Save Lifestyle
+    const lifestyleList = aiRecommendations.lifestyle || [];
+    if (Array.isArray(lifestyleList)) {
+      for (const rec of lifestyleList) {
+        const fields = extractFields(rec, 'Lifestyle Advice');
+        const created = await this.prisma.skinRecommendation.create({
+          data: {
+            skinAnalysisId: latestScan.id,
+            category: 'LIFESTYLE',
+            recommendationType: rec.type || 'HABIT',
+            title: fields.title,
+            description: fields.description,
+            reason: fields.reason,
+            priority: rec.priority || 'NORMAL',
+          }
+        });
+        createdRecommendations.push(created);
+      }
+    }
+
+    // Save Diet
+    const dietList = aiRecommendations.diet || [];
+    if (Array.isArray(dietList)) {
+      for (const rec of dietList) {
+        const fields = extractFields(rec, 'Dietary Advice');
+        const created = await this.prisma.skinRecommendation.create({
+          data: {
+            skinAnalysisId: latestScan.id,
+            category: 'DIET',
+            recommendationType: rec.type || 'NUTRITION',
+            title: fields.title,
+            description: fields.description,
+            reason: fields.reason,
+            priority: rec.priority || 'NORMAL',
+          }
+        });
+        createdRecommendations.push(created);
       }
     }
 

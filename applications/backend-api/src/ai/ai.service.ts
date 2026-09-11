@@ -21,18 +21,33 @@ export class AiService {
     if (geminiKey) {
       try {
         this.logger.log('Attempting AI generation with Gemini Pro...');
-        const geminiPayload = { ...payload, model: 'gemini-1.5-flash', max_tokens: 4096 };
+        const geminiPayload = { ...payload, model: 'gemini-3.6-flash' };
         
-        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${geminiKey}`
-          },
-          body: JSON.stringify(geminiPayload)
-        });
+        let res;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          res = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${geminiKey}`
+            },
+            body: JSON.stringify(geminiPayload)
+          });
 
-        if (res.ok) {
+          if (res.ok) break;
+          
+          const errorText = await res.text();
+          this.logger.warn(`Gemini attempt ${attempt} failed with status ${res.status}: ${errorText}`);
+          
+          if (res.status === 503 && attempt < 3) {
+            this.logger.log(`Waiting 2 seconds before retry ${attempt + 1}...`);
+            await new Promise(r => setTimeout(r, 2000));
+          } else {
+            break;
+          }
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text) {
@@ -40,8 +55,6 @@ export class AiService {
             const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             return JSON.parse(cleanedText);
           }
-        } else {
-          this.logger.warn(`Gemini failed with status ${res.status}: ${await res.text()}`);
         }
       } catch (err: any) {
         this.logger.warn(`Gemini exception: ${err.message}`);
@@ -55,7 +68,7 @@ export class AiService {
     if (openRouterKey) {
       try {
         this.logger.log('Attempting AI generation with OpenRouter Fallback...');
-        const orPayload = { ...payload, model: 'google/gemini-2.5-flash', max_tokens: 4096 };
+        const orPayload = { ...payload, model: 'google/gemini-3.6-flash', max_tokens: 1900 };
         
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
@@ -134,6 +147,12 @@ export class AiService {
 
       return {
         overallScore,
+        concerns: [
+          { name: 'Acne & Breakouts', level: 'Moderate', score: 65, color: '#E76F51', text: 'You have active inflammation mainly on the cheeks and chin.' },
+          { name: 'Uneven Skin Tone', level: 'Mild', score: 40, color: '#F4A261', text: 'Slight hyperpigmentation detected around the mouth.' },
+          { name: 'Large Pores', level: 'Moderate', score: 70, color: '#8D7DA3', text: 'Visible pores concentrated on the T-zone.' },
+          { name: 'Dark Circles', level: 'Mild', score: 35, color: '#598CA0', text: 'Faint under-eye shadows, likely due to fatigue.' }
+        ],
         summary: "Based on the visual analysis, your skin exhibits good overall health with some mild signs of dehydration and localized texture variations. A consistent hydration and barrier-protection routine is recommended.",
         metrics: [
           generateMetric("Barrier Integrity", false, "Lipid matrix appears healthy.", "Slightly compromised barrier detected."),
@@ -318,10 +337,19 @@ REQUIRED JSON STRUCTURE:
       "match": "96% Match",
       "type": "Morning & Night"
     }
+  ],
+  "concerns": [
+    {
+      "name": "[Skin Concern Name, e.g. Acne, Uneven Tone]",
+      "level": "[String: e.g. Mild, Moderate, Severe]",
+      "score": "[Integer 0-100 indicating severity]",
+      "color": "[Tailwind hex color e.g. #E76F51]",
+      "text": "[1 sentence describing where and how this appears on the face]"
+    }
   ]
 }
 
-Provide exactly 6 metrics matching those names, and 3-4 recommended actives. Format precisely as requested, and ensure the notes are highly personalized to the actual face in the image.`;
+Provide exactly 6 metrics matching those names, 3-4 recommended actives, and 2-4 primary skin concerns detected. Format precisely as requested, and ensure the notes are highly personalized to the actual face in the image.`;
 
     const payload = {
       messages: [
@@ -417,57 +445,45 @@ Generate the personalized grooming routine as a JSON object matching the require
 
   async generateSkinRecommendations(context: any): Promise<any> {
     const systemPrompt = `You are an elite, clinical-grade AI dermatologist for Veyra.
-Your task is to generate STRICT structured JSON recommendations based on the user's latest skin scan and profile.
+Your task is to generate STRICT structured JSON recommendations based on the user's existing Skin Health Score, Skin Overview, Skin Type, and Skin Concerns.
 
 IMPORTANT RULES:
-- YOUR RECOMMENDATIONS MUST BE STRICTLY AND EXPLICITLY BASED ON THE USER'S OVERALL "SKIN HEALTH SCORE" AND THE DETAILED "METRICS" PROVIDED. 
-- Tailor the intensity of the regimen to their overall score (e.g., intensive repair for low scores, maintenance/glow for high scores).
-- Directly address their lowest-scoring metrics (e.g., if Hydration is 60, recommend hydrating products and explain that it is to fix the low hydration score).
-- You must generate personalized recommendations for Skincare, Lifestyle, Diet, and Home Remedies.
-- For Skincare, you DO NOT recommend specific products, brands, prices, or URLs. You ONLY recommend the TYPE of product (e.g. CLEANSER, MOISTURIZER, SUNSCREEN, TONER, EYE CREAM) and the REQUIREMENTS (e.g. "lightweight", "non-comedogenic"). The backend will find the real product matching your requirements.
-- Diet: ALLERGIES ARE HARD CONSTRAINTS. Never recommend foods the user is allergic to. Respect dietary preferences.
-- Home Remedies: You MUST recommend 1-2 safe, natural DIY home remedies based on their skin issues (e.g., Aloe vera, Manuka honey, Oatmeal masks, Green tea compresses). HOWEVER, STRICTLY PREVENT unsafe remedies like lemon juice, baking soda, toothpaste, bleach, or undiluted essential oils.
-- Return ONLY valid JSON. Do not include markdown code blocks.
+- BE EXTREMELY CONCISE. Keep all reasons and descriptions to one short sentence to conserve tokens.
+- YOUR RECOMMENDATIONS MUST BE STRICTLY AND EXPLICITLY BASED ON THE USER'S OVERALL "SKIN HEALTH SCORE" AND THE DETAILED "METRICS" PROVIDED.
+- For Products, act as a knowledgeable skincare expert and recommend REAL, popular, and affordable products from trendy Indian brands (e.g., Dot & Key, Hyphen, Pilgrim, Minimalist, Plum).
+- Include the actual brand name, product name, and an estimated price in INR (e.g., "₹450"). Do NOT include URLs or stock info.
+- Return ONLY valid JSON matching this exact structure, but filled with ACTUAL personalized recommendations for the user:
 
-REQUIRED JSON STRUCTURE:
 {
-  "skincare": [
+  "recommendations": [
     {
-      "type": "CLEANSER",
-      "requirements": ["gentle", "hydrating"],
-      "reason": "Why this product type is needed",
-      "priority": "HIGH",
-      "instructions": "How/when to use it"
-    }
-  ],
-  "lifestyle": [
-    {
-      "type": "HYDRATION",
-      "title": "Drink more water",
-      "description": "Aim for 3L per day",
-      "reason": "Helps with skin hydration levels"
-    }
-  ],
-  "diet": [
-    {
-      "title": "Increase Omega-3s",
-      "description": "Eat more walnuts or salmon",
-      "reason": "Reduces inflammation"
+      "category": "<e.g., CLEANSER, SERUM, MOISTURIZER>",
+      "brand": "<Real brand name, e.g. CeraVe>",
+      "name": "<Real product name>",
+      "price": "<Estimated price in USD, e.g. 15.00>",
+      "reason": "<Specific reason based on user's metrics>"
     }
   ],
   "homeRemedies": [
     {
-      "title": "Cool Compress",
-      "description": "Apply a cool damp cloth for 5 mins",
-      "reason": "Soothes redness"
+      "name": "<DIY remedy name>",
+      "reason": "<Why it helps>"
     }
+  ],
+  "diet": [
+    "<Dietary advice 1>",
+    "<Dietary advice 2>"
+  ],
+  "lifestyle": [
+    "<Lifestyle advice 1>",
+    "<Lifestyle advice 2>"
   ]
 }`;
 
     const userPrompt = `User Profile:
 ${JSON.stringify(context.profile, null, 2)}
 
-Latest Skin Scan Metrics:
+Latest Skin Profile:
 ${JSON.stringify(context.skinAnalysis, null, 2)}
 
 Generate the personalized recommendations JSON matching the structure exactly.`;

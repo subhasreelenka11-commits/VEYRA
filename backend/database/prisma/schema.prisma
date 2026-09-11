@@ -109,6 +109,7 @@ model SkinScan {
   summary      String?
   metrics      Json
   actives      Json
+  concerns      Json?
   
   recommendations SkinRecommendation[]
 
