@@ -414,4 +414,72 @@ Generate the personalized grooming routine as a JSON object matching the require
 
     return this.executeWithFallback(payload);
   }
+
+  async generateSkinRecommendations(context: any): Promise<any> {
+    const systemPrompt = `You are an elite, clinical-grade AI dermatologist for Veyra.
+Your task is to generate STRICT structured JSON recommendations based on the user's latest skin scan and profile.
+
+IMPORTANT RULES:
+- YOUR RECOMMENDATIONS MUST BE STRICTLY AND EXPLICITLY BASED ON THE USER'S OVERALL "SKIN HEALTH SCORE" AND THE DETAILED "METRICS" PROVIDED. 
+- Tailor the intensity of the regimen to their overall score (e.g., intensive repair for low scores, maintenance/glow for high scores).
+- Directly address their lowest-scoring metrics (e.g., if Hydration is 60, recommend hydrating products and explain that it is to fix the low hydration score).
+- You must generate personalized recommendations for Skincare, Lifestyle, Diet, and Home Remedies.
+- For Skincare, you DO NOT recommend specific products, brands, prices, or URLs. You ONLY recommend the TYPE of product (e.g. CLEANSER, MOISTURIZER, SUNSCREEN, TONER, EYE CREAM) and the REQUIREMENTS (e.g. "lightweight", "non-comedogenic"). The backend will find the real product matching your requirements.
+- Diet: ALLERGIES ARE HARD CONSTRAINTS. Never recommend foods the user is allergic to. Respect dietary preferences.
+- Home Remedies: You MUST recommend 1-2 safe, natural DIY home remedies based on their skin issues (e.g., Aloe vera, Manuka honey, Oatmeal masks, Green tea compresses). HOWEVER, STRICTLY PREVENT unsafe remedies like lemon juice, baking soda, toothpaste, bleach, or undiluted essential oils.
+- Return ONLY valid JSON. Do not include markdown code blocks.
+
+REQUIRED JSON STRUCTURE:
+{
+  "skincare": [
+    {
+      "type": "CLEANSER",
+      "requirements": ["gentle", "hydrating"],
+      "reason": "Why this product type is needed",
+      "priority": "HIGH",
+      "instructions": "How/when to use it"
+    }
+  ],
+  "lifestyle": [
+    {
+      "type": "HYDRATION",
+      "title": "Drink more water",
+      "description": "Aim for 3L per day",
+      "reason": "Helps with skin hydration levels"
+    }
+  ],
+  "diet": [
+    {
+      "title": "Increase Omega-3s",
+      "description": "Eat more walnuts or salmon",
+      "reason": "Reduces inflammation"
+    }
+  ],
+  "homeRemedies": [
+    {
+      "title": "Cool Compress",
+      "description": "Apply a cool damp cloth for 5 mins",
+      "reason": "Soothes redness"
+    }
+  ]
+}`;
+
+    const userPrompt = `User Profile:
+${JSON.stringify(context.profile, null, 2)}
+
+Latest Skin Scan Metrics:
+${JSON.stringify(context.skinAnalysis, null, 2)}
+
+Generate the personalized recommendations JSON matching the structure exactly.`;
+
+    const payload = {
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      response_format: { type: "json_object" }
+    };
+
+    return this.executeWithFallback(payload);
+  }
 }

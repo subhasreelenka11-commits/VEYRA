@@ -110,6 +110,8 @@ model SkinScan {
   metrics      Json
   actives      Json
   
+  recommendations SkinRecommendation[]
+
   createdAt    DateTime @default(now())
 }
 
@@ -136,4 +138,45 @@ model RoutineProgress {
   updatedAt      DateTime @updatedAt
 
   @@unique([userId, date]) // Only one progress record per user per day
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  brand         String
+  category      String   // e.g., FACE_WASH, MOISTURIZER, SUNSCREEN
+  subCategory   String?
+  description   String?
+  ingredients   String[]
+  skinTypes     String[] // e.g., COMBINATION, DRY, OILY
+  concerns      String[] // e.g., ACNE, UNEVEN_TONE
+  suitableFor   String[]
+  avoidFor      String[]
+  price         Float?
+  currency      String   @default("INR")
+  productUrl    String?
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SkinRecommendation {
+  id                 String   @id @default(uuid())
+  skinAnalysisId     String
+  skinAnalysis       SkinScan @relation(fields: [skinAnalysisId], references: [id], onDelete: Cascade)
+  
+  category           String   // SKINCARE, LIFESTYLE, DIET, HOME_CARE
+  recommendationType String   // CLEANSER, MOISTURIZER, SLEEP, HYDRATION
+  title              String
+  description        String?
+  reason             String?
+  priority           String   @default("NORMAL")
+  instructions       String?
+  
+  // JSON object storing the AI's required product traits
+  requirements       Json?    
+  
+  createdAt          DateTime @default(now())
 }

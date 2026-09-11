@@ -10,17 +10,45 @@ export default function SkinAnalysisPage() {
   const [alignmentPhase, setAlignmentPhase] = useState<'idle' | 'aligning' | 'aligned'>('idle');
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
-  const [activeMetricTab, setActiveMetricTab] = useState<'overview' | 'ingredients' | 'history'>('overview');
-  
+  const [activeTab, setActiveTab] = useState('Overview');
   const [metrics, setMetrics] = useState<any[]>([]);
   const [recommendedActives, setRecommendedActives] = useState<any[]>([]);
   const [overallScore, setOverallScore] = useState<number | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [history, setHistory] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [activeRecommendationTab, setActiveRecommendationTab] = useState('All');
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+
+  const loadRecommendations = async () => {
+    try {
+      const data = await fetchApi('/skin-analysis/latest/recommendations');
+      if (Array.isArray(data)) {
+        setRecommendations(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      const data = await fetchApi('/skin-analysis/latest/recommendations/generate', { method: 'POST' });
+      if (Array.isArray(data)) {
+        setRecommendations(data);
+      }
+    } catch (err) {
+      console.error('Failed to regenerate', err);
+      alert('Failed to regenerate recommendations. Please try again.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
 
   useEffect(() => {
     const fetchInitial = async () => {
@@ -35,6 +63,7 @@ export default function SkinAnalysisPage() {
             setOverallScore(latest.overallScore);
             setSummary(latest.summary);
             setScanComplete(true);
+            loadRecommendations();
           }
         }
       } catch (e) {
@@ -279,180 +308,337 @@ export default function SkinAnalysisPage() {
           {/* RIGHT COLUMN */}
           <div className="flex flex-col space-y-6">
             {/* Navigation Tabs */}
-            <div className="flex items-center gap-2 w-full border-b border-[#F0EFEB] pb-5">
-              <div className="bg-[#FAF8F5] rounded-full p-1 flex">
-                <button className="bg-[#516454] text-white px-6 py-2 rounded-full text-[13px] font-medium shadow-sm">Overview</button>
-                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Skin Concerns</button>
-                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Recommendations</button>
-                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Products</button>
-                <button className="text-[#6A786E] hover:text-[#1F2922] px-5 py-2 rounded-full text-[13px] font-medium transition-colors">Daily Routine</button>
+            <div className="flex items-center gap-2 w-full border-b border-[#F0EFEB] pb-5 overflow-x-auto no-scrollbar">
+              <div className="bg-[#FAF8F5] rounded-full p-1 flex whitespace-nowrap">
+                {['Overview', 'Skin Concerns', 'Recommendations', 'Products', 'Daily Routine'].map(tab => (
+                  <button 
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-5 py-2 rounded-full text-[13px] font-medium transition-all ${activeTab === tab ? 'bg-[#516454] text-white shadow-sm' : 'text-[#6A786E] hover:text-[#1F2922]'}`}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Health Score Box */}
-            <div className="border border-[#F0EFEB] rounded-[24px] p-7 flex flex-col md:flex-row gap-8 md:items-center">
-              
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-6">
-                  <h3 className="text-[20px] font-serif text-[#1F2922]">Skin Health Score</h3>
-                  <svg className="w-3.5 h-3.5 text-[#B8C2BC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {/* TAB CONTENT: Overview */}
+            {activeTab === 'Overview' && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                {/* Health Score Box */}
+                <div className="border border-[#F0EFEB] rounded-[24px] p-7 flex flex-col md:flex-row gap-8 md:items-center">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-6">
+                      <h3 className="text-[20px] font-serif text-[#1F2922]">Skin Health Score</h3>
+                      <svg className="w-3.5 h-3.5 text-[#B8C2BC]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    
+                    <div className="flex items-center gap-8">
+                      <div className="relative w-[110px] h-[110px] flex-shrink-0">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="44" stroke="#F4F6F4" strokeWidth="8" fill="none" />
+                          <circle cx="50" cy="50" r="44" stroke="#516454" strokeWidth="8" fill="none" strokeDasharray="276.46" strokeDashoffset={276.46 - (276.46 * (overallScore || 0)) / 100} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-[34px] font-serif text-[#1F2922] leading-none mb-1">{overallScore || '-'}</span>
+                          <span className="text-[11px] text-[#869188] font-medium border-t border-[#F0EFEB] pt-1 w-10 text-center">/100</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-[18px] font-serif text-[#1F2922] font-bold mb-2">{overallScore && overallScore >= 80 ? 'Good' : overallScore && overallScore >= 60 ? 'Fair' : 'Needs Attention'}</h3>
+                        <p className="text-[12px] text-[#5C6B61] leading-relaxed max-w-[240px]">
+                          {summary || 'Your skin is in good condition! With the right care and consistency, it can look even healthier and more radiant.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Key Strengths */}
+                  <div className="bg-[#F6F7F5] rounded-[20px] p-6 md:w-[260px] flex-shrink-0">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="text-[#516454] bg-[#EBECE9] p-1.5 rounded-full">
+                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                      </div>
+                      <h4 className="text-[14px] font-bold text-[#1F2922]">Key Strengths</h4>
+                    </div>
+                    <ul className="space-y-4">
+                      <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
+                        <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        Good hydration levels
+                      </li>
+                      <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
+                        <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        Healthy skin barrier
+                      </li>
+                      <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
+                        <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        Even skin texture
+                      </li>
+                    </ul>
+                  </div>
                 </div>
+
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {metrics.length > 0 ? metrics.map((m: any, i: number) => {
+                     const getIcon = (name: string) => {
+                       if(name.toLowerCase().includes('hydra')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16a4 4 0 100-8 4 4 0 000 8z"></path></svg>;
+                       if(name.toLowerCase().includes('oil')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>;
+                       if(name.toLowerCase().includes('pore')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+                       if(name.toLowerCase().includes('textur')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>;
+                       if(name.toLowerCase().includes('dark')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>;
+                       return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>;
+                     };
+                     
+                     return (
+                      <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 flex items-start gap-4">
+                        <div className="text-[#1F2922] mt-0.5">
+                          {getIcon(m.name)}
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <h4 className="text-[13px] font-bold text-[#1F2922] mb-0.5">{m.name}</h4>
+                            <span className="text-[11px] text-[#5C6B61] block">{m.score}/100</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-[#F4F6F4] rounded-full overflow-hidden">
+                            <div className="h-full bg-[#516454] rounded-full" style={{ width: `${m.score}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                     );
+                  }) : (
+                    // Skeleton loading / placeholders
+                    Array(6).fill(0).map((_, i) => (
+                      <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 flex items-start gap-4 opacity-50">
+                        <div className="w-5 h-5 rounded bg-[#EAE6DF]" />
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <div className="w-24 h-4 bg-[#EAE6DF] rounded mb-1.5" />
+                            <div className="w-12 h-3 bg-[#EAE6DF] rounded" />
+                          </div>
+                          <div className="w-full h-1.5 bg-[#F4F6F4] rounded-full" />
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: Skin Concerns */}
+            {activeTab === 'Skin Concerns' && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-[20px] font-serif text-[#1F2922]">Skin Concerns Details</h3>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {[
+                    { name: 'Acne & Breakouts', level: 'Moderate', score: 65, color: '#E76F51', text: 'You have active inflammation mainly on the cheeks and chin.' },
+                    { name: 'Uneven Skin Tone', level: 'Mild', score: 40, color: '#F4A261', text: 'Slight hyperpigmentation detected around the mouth.' },
+                    { name: 'Large Pores', level: 'Moderate', score: 70, color: '#8D7DA3', text: 'Visible pores concentrated on the T-zone.' },
+                    { name: 'Dark Circles', level: 'Mild', score: 35, color: '#598CA0', text: 'Faint under-eye shadows, likely due to fatigue.' }
+                  ].map((concern, i) => (
+                    <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 bg-white">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                           <span className="w-3 h-3 rounded-full" style={{ backgroundColor: concern.color }} />
+                           <h4 className="text-[15px] font-bold text-[#1F2922]">{concern.name}</h4>
+                        </div>
+                        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: concern.color }}>{concern.level}</span>
+                      </div>
+                      <div className="w-full h-2 bg-[#F4F6F4] rounded-full overflow-hidden mb-3">
+                        <div className="h-full rounded-full" style={{ width: `${concern.score}%`, backgroundColor: concern.color }} />
+                      </div>
+                      <p className="text-[13px] text-[#5C6B61]">{concern.text}</p>
+                      <button 
+                        onClick={() => setActiveTab('Recommendations')}
+                        className="text-[12px] font-bold text-[#516454] mt-3 hover:underline"
+                      >
+                        View recommendation →
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: Recommendations */}
+            {activeTab === 'Recommendations' && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="bg-[#FAF8F5] border border-[#F0EFEB] rounded-[24px] p-7">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-start gap-3">
+                      <div className="text-[#D4A373] mt-1">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                      </div>
+                      <div>
+                        <h3 className="text-[16px] font-serif text-[#1F2922] font-semibold mb-0.5">Your Personalized Recommendations</h3>
+                        <p className="text-[12px] text-[#869188]">Simple steps for healthier, clearer and glowing skin.</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={handleRegenerate}
+                      disabled={isRegenerating}
+                      className="flex items-center gap-1.5 text-[11px] font-bold text-[#516454] bg-white border border-[#E0E2DF] px-3 py-1.5 rounded-full hover:bg-[#F2EFEA] transition-colors"
+                    >
+                      {isRegenerating ? <span className="w-3 h-3 border border-[#516454] border-t-transparent rounded-full animate-spin" /> : <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>}
+                      {isRegenerating ? 'Regenerating...' : 'Regenerate'}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3 flex-wrap mb-6">
+                    {['All', 'Lifestyle', 'Diet', 'Home Remedies'].map(tag => (
+                      <button 
+                        key={tag} 
+                        onClick={() => setActiveRecommendationTab(tag)}
+                        className={`px-4 py-1.5 rounded-full border text-[12px] font-medium transition-colors ${activeRecommendationTab === tag ? 'bg-[#516454] text-white border-[#516454]' : 'border-[#E0E2DF] text-[#6A786E] hover:bg-[#FAF8F5]'}`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {recommendations.length === 0 && !isRegenerating && (
+                      <p className="text-sm text-[#869188] col-span-2">No recommendations available yet. Click Regenerate to generate personalized advice.</p>
+                    )}
+
+                    {(activeRecommendationTab === 'All' || activeRecommendationTab === 'Lifestyle') && recommendations.filter(r => r.category === 'LIFESTYLE').map(r => (
+                      <div key={r.id} className="bg-white p-5 rounded-2xl border border-[#F0EFEB] space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5 text-[#D4A373]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                          <h4 className="text-[14px] font-bold text-[#1F2922]">{r.title}</h4>
+                        </div>
+                        <p className="text-[13px] text-[#5C6B61] leading-relaxed">{r.description}</p>
+                        <p className="text-[11px] text-[#869188] italic">Why: {r.reason}</p>
+                      </div>
+                    ))}
+
+                    {(activeRecommendationTab === 'All' || activeRecommendationTab === 'Diet') && recommendations.filter(r => r.category === 'DIET').map(r => (
+                      <div key={r.id} className="bg-white p-5 rounded-2xl border border-[#F0EFEB] space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5 text-[#E76F51]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                          <h4 className="text-[14px] font-bold text-[#1F2922]">{r.title}</h4>
+                        </div>
+                        <p className="text-[13px] text-[#5C6B61] leading-relaxed">{r.description}</p>
+                        <p className="text-[11px] text-[#869188] italic">Why: {r.reason}</p>
+                      </div>
+                    ))}
+
+                    {(activeRecommendationTab === 'All' || activeRecommendationTab === 'Home Remedies') && recommendations.filter(r => r.category === 'HOMEREMEDIES').map(r => (
+                      <div key={r.id} className="bg-white p-5 rounded-2xl border border-[#F0EFEB] space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5 text-[#598CA0]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                          <h4 className="text-[14px] font-bold text-[#1F2922]">{r.title}</h4>
+                        </div>
+                        <p className="text-[13px] text-[#5C6B61] leading-relaxed">{r.description}</p>
+                        <p className="text-[11px] text-[#869188] italic">Why: {r.reason}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: Products */}
+            {activeTab === 'Products' && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <h3 className="text-[20px] font-serif text-[#1F2922]">Recommended for your skin</h3>
                 
-                <div className="flex items-center gap-8">
-                  <div className="relative w-[110px] h-[110px] flex-shrink-0">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="44" stroke="#F4F6F4" strokeWidth="8" fill="none" />
-                      <circle cx="50" cy="50" r="44" stroke="#516454" strokeWidth="8" fill="none" strokeDasharray="276.46" strokeDashoffset={276.46 - (276.46 * (overallScore || 0)) / 100} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[34px] font-serif text-[#1F2922] leading-none mb-1">{overallScore || '-'}</span>
-                      <span className="text-[11px] text-[#869188] font-medium border-t border-[#F0EFEB] pt-1 w-10 text-center">/100</span>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-[18px] font-serif text-[#1F2922] font-bold mb-2">{overallScore && overallScore >= 80 ? 'Good' : overallScore && overallScore >= 60 ? 'Fair' : 'Needs Attention'}</h3>
-                    <p className="text-[12px] text-[#5C6B61] leading-relaxed max-w-[240px]">
-                      {summary || 'Your skin is in good condition! With the right care and consistency, it can look even healthier and more radiant.'}
-                    </p>
-                  </div>
+                {recommendations.filter(r => r.category === 'SKINCARE').length === 0 && !isRegenerating && (
+                  <p className="text-sm text-[#869188]">No matching products available yet. Try regenerating recommendations.</p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {recommendations.filter(r => r.category === 'SKINCARE').map(r => {
+                    const productData = r.instructions ? JSON.parse(r.instructions) : null;
+                    if (!productData) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={r.id} className="border border-[#F0EFEB] rounded-[16px] p-5 hover:border-[#516454]/30 transition-colors cursor-pointer flex flex-col gap-4 bg-white relative overflow-hidden group">
+                        <div className="flex items-start gap-4">
+                          {productData.imageUrl ? (
+                             <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 relative bg-[#F4F6F4]">
+                               <img src={productData.imageUrl} alt={productData.name} className="object-cover w-full h-full" />
+                             </div>
+                          ) : (
+                            <div className="bg-[#FAF8F5] w-16 h-16 flex items-center justify-center rounded-xl text-xl flex-shrink-0">
+                              {r.recommendationType.includes('CLEAN') ? '🧴' : '💧'}
+                            </div>
+                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#869188] mb-1 block truncate">{productData.brand} • {r.recommendationType}</span>
+                            <h4 className="text-[14px] font-bold text-[#1F2922] mb-1 truncate">{productData.name}</h4>
+                            <p className="text-[12px] text-[#5C6B61] font-medium">{productData.currency} {productData.price}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#F0EFEB]/50">
+                          <p className="text-[11px] font-bold text-[#516454] mb-1 flex items-center gap-1">
+                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                             Why Veyra recommends it
+                          </p>
+                          <p className="text-[12px] text-[#5C6B61] leading-relaxed line-clamp-2">{r.reason || 'Matches your specific skin profile and concerns.'}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
+            )}
 
-              {/* Key Strengths */}
-              <div className="bg-[#F6F7F5] rounded-[20px] p-6 md:w-[260px] flex-shrink-0">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="text-[#516454] bg-[#EBECE9] p-1.5 rounded-full">
-                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                  </div>
-                  <h4 className="text-[14px] font-bold text-[#1F2922]">Key Strengths</h4>
-                </div>
-                <ul className="space-y-4">
-                  <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
-                    <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                    Good hydration levels
-                  </li>
-                  <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
-                    <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                    Healthy skin barrier
-                  </li>
-                  <li className="flex items-center gap-3 text-[12px] text-[#425046] font-medium">
-                    <svg className="w-3.5 h-3.5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-                    Even skin texture
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {metrics.length > 0 ? metrics.map((m: any, i: number) => {
-                 const getIcon = (name: string) => {
-                   if(name.toLowerCase().includes('hydra')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16a4 4 0 100-8 4 4 0 000 8z"></path></svg>;
-                   if(name.toLowerCase().includes('oil')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>;
-                   if(name.toLowerCase().includes('pore')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
-                   if(name.toLowerCase().includes('textur')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>;
-                   if(name.toLowerCase().includes('dark')) return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>;
-                   return <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>;
-                 };
-                 
-                 return (
-                  <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 flex items-start gap-4">
-                    <div className="text-[#1F2922] mt-0.5">
-                      {getIcon(m.name)}
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <h4 className="text-[13px] font-bold text-[#1F2922] mb-0.5">{m.name}</h4>
-                        <span className="text-[11px] text-[#5C6B61] block">{m.score}/100</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-[#F4F6F4] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#516454] rounded-full" style={{ width: `${m.score}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                 );
-              }) : (
-                // Skeleton loading / placeholders
-                Array(6).fill(0).map((_, i) => (
-                  <div key={i} className="border border-[#F0EFEB] rounded-[16px] p-5 flex items-start gap-4 opacity-50">
-                    <div className="w-5 h-5 rounded bg-[#EAE6DF]" />
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <div className="w-24 h-4 bg-[#EAE6DF] rounded mb-1.5" />
-                        <div className="w-12 h-3 bg-[#EAE6DF] rounded" />
-                      </div>
-                      <div className="w-full h-1.5 bg-[#F4F6F4] rounded-full" />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Recommendations Block */}
-            <div className="bg-[#FAF8F5] border border-[#F0EFEB] rounded-[24px] p-7">
-              <div className="flex items-start gap-3 mb-6">
-                <div className="text-[#D4A373] mt-1">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                </div>
+            {/* TAB CONTENT: Daily Routine */}
+            {activeTab === 'Daily Routine' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
                 <div>
-                  <h3 className="text-[16px] font-serif text-[#1F2922] font-semibold mb-0.5">Your Personalized Recommendations</h3>
-                  <p className="text-[12px] text-[#869188]">Simple steps for healthier, clearer and glowing skin.</p>
+                  <h3 className="text-[20px] font-serif text-[#1F2922] flex items-center gap-2 mb-4">
+                    <span className="text-[#F4A261]">☀</span> Morning Routine
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { step: 1, name: 'Cleanser', action: 'Wash with gentle circular motions' },
+                      { step: 2, name: 'Moisturizer', action: 'Apply to damp skin to lock in hydration' },
+                      { step: 3, name: 'Sunscreen', action: 'Apply generous amount to face & neck' }
+                    ].map(r => (
+                      <div key={r.step} className="flex items-center gap-4 border border-[#F0EFEB] rounded-[16px] p-4 bg-white">
+                        <div className="w-6 h-6 rounded-full bg-[#EAE6DF] text-[#516454] text-[11px] font-bold flex items-center justify-center flex-shrink-0">{r.step}</div>
+                        <div className="flex-1">
+                          <h4 className="text-[13px] font-bold text-[#1F2922]">{r.name}</h4>
+                          <p className="text-[11px] text-[#869188]">{r.action}</p>
+                        </div>
+                        <button className="text-[11px] font-bold text-[#516454] px-3 py-1.5 rounded-full border border-[#E0E2DF] hover:bg-[#FAF8F5]">Mark ✓</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="space-y-4">
-                  <div className="text-[#1F2922]">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <div>
+                  <h3 className="text-[20px] font-serif text-[#1F2922] flex items-center gap-2 mb-4">
+                    <span className="text-[#8D7DA3]">🌙</span> Evening Routine
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      { step: 1, name: 'Cleanser', action: 'Double cleanse to remove SPF/dirt' },
+                      { step: 2, name: 'Treatment', action: 'Apply BHA on T-zone only' },
+                      { step: 3, name: 'Moisturizer', action: 'Layer over dry skin' }
+                    ].map(r => (
+                      <div key={r.step} className="flex items-center gap-4 border border-[#F0EFEB] rounded-[16px] p-4 bg-white">
+                        <div className="w-6 h-6 rounded-full bg-[#EAE6DF] text-[#516454] text-[11px] font-bold flex items-center justify-center flex-shrink-0">{r.step}</div>
+                        <div className="flex-1">
+                          <h4 className="text-[13px] font-bold text-[#1F2922]">{r.name}</h4>
+                          <p className="text-[11px] text-[#869188]">{r.action}</p>
+                        </div>
+                        <button className="text-[11px] font-bold text-[#516454] px-3 py-1.5 rounded-full border border-[#E0E2DF] hover:bg-[#FAF8F5]">Mark ✓</button>
+                      </div>
+                    ))}
                   </div>
-                  <h4 className="text-[12px] font-bold text-[#1F2922]">Skincare Routine</h4>
-                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
-                    <li className="pl-1">Gentle cleanser (AM & PM)</li>
-                    <li className="pl-1">Non-comedogenic moisturizer</li>
-                    <li className="pl-1">Broad spectrum sunscreen</li>
-                  </ul>
-                </div>
-                <div className="space-y-4">
-                  <div className="text-[#1F2922]">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                  </div>
-                  <h4 className="text-[12px] font-bold text-[#1F2922]">Lifestyle Tips</h4>
-                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
-                    <li className="pl-1">Stay hydrated (2.5-3L/day)</li>
-                    <li className="pl-1">Get 7-8 hours sleep</li>
-                    <li className="pl-1">Manage stress</li>
-                  </ul>
-                </div>
-                <div className="space-y-4">
-                  <div className="text-[#1F2922]">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                  </div>
-                  <h4 className="text-[12px] font-bold text-[#1F2922]">Diet Recommendations</h4>
-                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
-                    <li className="pl-1">More fruits & vegetables</li>
-                    <li className="pl-1">Omega-3 rich foods</li>
-                    <li className="pl-1">Reduce sugar & processed food</li>
-                  </ul>
-                </div>
-                <div className="space-y-4">
-                  <div className="text-[#1F2922]">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                  </div>
-                  <h4 className="text-[12px] font-bold text-[#1F2922]">Home Remedies</h4>
-                  <ul className="space-y-2.5 text-[11px] text-[#6A786E] pl-4 list-[circle]">
-                    <li className="pl-1">Aloe vera for hydration</li>
-                    <li className="pl-1">Green tea for inflammation</li>
-                    <li className="pl-1">Honey & yogurt for glow</li>
-                  </ul>
                 </div>
               </div>
+            )}
 
-              <div className="bg-[#F1F4F1] rounded-xl p-4 flex gap-4 items-center">
-                <svg className="w-5 h-5 text-[#516454] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                <p className="text-[11px] text-[#516454] font-medium leading-relaxed">Remember: Results may vary based on your lifestyle, diet and consistency. For best results, follow your personalized routine and check back for updates.</p>
-              </div>
-            </div>
-            
           </div>
         </div>
       </div>

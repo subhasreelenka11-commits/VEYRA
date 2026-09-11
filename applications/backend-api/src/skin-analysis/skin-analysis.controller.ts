@@ -16,4 +16,14 @@ export class SkinAnalysisController {
   async getHistory(@Req() req: any): Promise<any> {
     return this.skinAnalysisService.getHistory(req.user.userId);
   }
+
+  @Get('latest/recommendations')
+  async getLatestRecommendations(@Req() req: any): Promise<any> {
+    return this.skinAnalysisService.getLatestRecommendations(req.user.userId);
+  }
+
+  @Post('latest/recommendations/generate')
+  async generateRecommendations(@Req() req: any): Promise<any> {
+    return this.skinAnalysisService.generateRecommendations(req.user.userId);
+  }
 }
