@@ -10,6 +10,7 @@ import { RecipesModule } from './recipes/recipes.module';
 import { AiModule } from './ai/ai.module';
 import { GroomingModule } from './grooming/grooming.module';
 import { SkinAnalysisModule } from './skin-analysis/skin-analysis.module';
+import { ProgressModule } from './progress/progress.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { SkinAnalysisModule } from './skin-analysis/skin-analysis.module';
     RecipesModule,
     AiModule,
     GroomingModule,
-    SkinAnalysisModule
+    SkinAnalysisModule,
+    ProgressModule
   ],
   controllers: [AppController],
   providers: [AppService],

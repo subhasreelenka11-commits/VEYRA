@@ -1,56 +1,51 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { fetchApi } from '../../lib/api';
 
 export default function ProgressPage() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchApi('/progress/dashboard');
+      setDashboardData(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const stats = [
-    { label: 'Skin Health Index', value: '84/100', change: '+12%', positive: true, note: 'Stratum corneum fortified' },
-    { label: 'Ritual Consistency', value: '94%', change: '+8%', positive: true, note: '26 of last 28 days completed' },
+    { label: 'Skin Health Index', value: dashboardData ? `${dashboardData.skinHealthIndex}/100` : '0/100', change: '+2%', positive: true, note: 'Latest skin scan score' },
+    { label: 'Ritual Consistency', value: dashboardData ? `${dashboardData.ritualConsistency}%` : '0%', change: '+5%', positive: true, note: dashboardData ? `${dashboardData.completedDays} of last 28 days completed` : 'No data' },
     { label: 'Mean Hydration', value: '2.4L / day', change: '+0.5L', positive: true, note: 'Cellular hydration target met' },
     { label: 'Metabolic Balance', value: '8.8 / 10', change: '+0.6', positive: true, note: 'Steady morning glucose stability' },
   ];
 
-  // 4 weeks of habit check-ins (7 days each: Mon - Sun)
-  const habitMatrix = [
-    [true, true, true, true, false, true, true],
-    [true, true, true, true, true, true, true],
-    [true, false, true, true, true, true, true],
-    [true, true, true, true, true, true, true],
+  const habitMatrix = dashboardData?.habitMatrix || [
+    [false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false],
+    [false, false, false, false, false, false, false],
   ];
 
-  const milestones = [
-    {
-      date: 'September 4, 2026',
-      title: 'Optimal Lipid Barrier Attained',
-      badge: 'Dermatology Milestone',
-      description: 'AI skin diagnostics detected zero micro-flaking and sustained epidermal hydration above 82%.',
-      score: '84 Score',
-    },
-    {
-      date: 'August 27, 2026',
-      title: '14-Day Consistent Ritual Streak',
-      badge: 'Habit Milestone',
-      description: 'Morning Vitamin C and evening double-cleanse completed without interruption.',
-      score: '14 Days',
-    },
-    {
-      date: 'August 19, 2026',
-      title: 'Reduction in Cheek Vascular Redness',
-      badge: 'Clinical Progress',
-      description: 'Cica and Niacinamide combination calmed cheek sensitivity by 28% compared to baseline scan.',
-      score: '78 Score',
-    },
-    {
-      date: 'August 12, 2026',
-      title: 'Initial Wellness Baseline Registered',
-      badge: 'Account Origin',
-      description: 'Completed comprehensive onboarding, health metrics, and dietary preferences setup.',
-      score: '72 Baseline',
-    },
-  ];
+  const milestones = dashboardData?.historicalScans?.map((s: any) => ({
+    date: new Date(s.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    title: 'Biomarker Scan Completed',
+    badge: 'Clinical Progress',
+    description: s.summary || 'Routine check-in of dermal metrics.',
+    score: `${s.overallScore} Score`,
+  })) || [];
 
   return (
     <div className="space-y-8 pb-12">
@@ -205,7 +200,7 @@ export default function ProgressPage() {
           <div className="pt-2 border-t border-[#E8DCD2] flex items-center justify-between text-xs text-[#6B5A52]">
             <span>Current Streak:</span>
             <span className="font-bold text-[#1F1916] bg-[#E8EFE6] px-3 py-1 rounded-full text-[#334234] border border-[#708264]/20">
-              🔥 12 Days Straight
+              🔥 {dashboardData?.currentStreak || 0} Days Straight
             </span>
           </div>
         </div>
