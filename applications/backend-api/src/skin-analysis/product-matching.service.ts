@@ -30,16 +30,16 @@ export class ProductMatchingService {
       const requirements = rec.requirements || [];
       
       // Filter by broad category first
-      let candidates = allProducts.filter(p => p.category === type);
+      let candidates = allProducts.filter((p: any) => p.category === type);
       
       // If we don't have exact category matches, maybe try broad substring match on name/category
       if (candidates.length === 0) {
-        candidates = allProducts.filter(p => p.name.toUpperCase().includes(type) || p.category.includes(type));
+        candidates = allProducts.filter((p: any) => p.name.toUpperCase().includes(type) || p.category.includes(type));
       }
 
       // If we STILL have candidates, rank them by how many requirements they hit
       if (candidates.length > 0) {
-        const scoredCandidates = candidates.map(product => {
+        const scoredCandidates = candidates.map((product: any) => {
           let score = 0;
           
           const productText = `${product.name} ${product.description} ${product.ingredients.join(' ')} ${product.suitableFor.join(' ')} ${product.skinTypes.join(' ')}`.toLowerCase();
@@ -54,7 +54,7 @@ export class ProductMatchingService {
         });
         
         // Sort by score descending
-        scoredCandidates.sort((a, b) => b.score - a.score);
+        scoredCandidates.sort((a: any, b: any) => b.score - a.score);
         
         // Find the best match that hasn't been heavily recommended already, or just take top
         // To prevent the exact same product being recommended 4 times for different reasons,
@@ -62,7 +62,7 @@ export class ProductMatchingService {
         let bestMatch = scoredCandidates[0].product;
         
         // Deduplication: look for the highest scoring product that we haven't already recommended
-        const unusedCandidates = scoredCandidates.filter(sc => 
+        const unusedCandidates = scoredCandidates.filter((sc: any) => 
           !matchedProducts.some(mp => mp.product && mp.product.id === sc.product.id)
         );
         

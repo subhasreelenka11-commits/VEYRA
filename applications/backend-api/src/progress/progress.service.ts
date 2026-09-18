@@ -17,7 +17,7 @@ export class ProgressService {
       take: 20
     });
 
-    const chartData = historicalScans.map(scan => ({
+    const chartData = historicalScans.map((scan: any) => ({
       date: scan.createdAt.toISOString(),
       score: scan.overallScore
     }));
@@ -46,7 +46,7 @@ export class ProgressService {
       d.setDate(d.getDate() - (27 - i));
       const ds = d.toLocaleDateString('en-CA'); // local timezone YYYY-MM-DD
       
-      const record = progressRecords.find(r => r.date === ds);
+      const record = progressRecords.find((r: any) => r.date === ds);
       const isDone = record && record.completedSteps && record.completedSteps.length > 0;
       
       if (isDone) completedCount++;
@@ -62,7 +62,7 @@ export class ProgressService {
       d.setDate(d.getDate() - i);
       const ds = d.toLocaleDateString('en-CA');
       
-      const record = progressRecords.find(r => r.date === ds);
+      const record = progressRecords.find((r: any) => r.date === ds);
       const isDone = record && record.completedSteps && record.completedSteps.length > 0;
       
       if (isDone) {

@@ -5,3 +5,5 @@ build
 .env
 .turbo
 *.log
+applications/backend-api/src/generated/client
+applications/backend-api/prisma/schema.prisma
