@@ -179,9 +179,9 @@ export default function ProgressPage() {
             <div className="flex justify-between text-[10px] font-mono text-[#8A7970] uppercase">
               <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
             </div>
-            {habitMatrix.map((week, wIdx) => (
+            {habitMatrix.map((week: boolean[], wIdx: number) => (
               <div key={wIdx} className="grid grid-cols-7 gap-2">
-                {week.map((done, dIdx) => (
+                {week.map((done: boolean, dIdx: number) => (
                   <div
                     key={dIdx}
                     className={`h-8 rounded-xl flex items-center justify-center text-[10px] font-bold transition-all ${
@@ -222,7 +222,7 @@ export default function ProgressPage() {
         </div>
 
         <div className="space-y-4">
-          {milestones.map((m, idx) => (
+          {milestones.map((m: any, idx: number) => (
             <div
               key={idx}
               className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#E8DCD2] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-[#EADBCE]/30 transition-all"
