@@ -115,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FAF8F5]">
         {/* Header (Search + Profile) */}
-        <header className="flex items-center justify-between px-8 py-5 shrink-0 z-10">
+        <header className="relative flex items-center justify-between px-8 py-5 shrink-0 z-50">
           <div className="flex items-center flex-1 max-w-xl">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
