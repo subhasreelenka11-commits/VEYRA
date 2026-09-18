@@ -21,17 +21,44 @@ export class AiService {
     if (geminiKey) {
       try {
         this.logger.log('Attempting AI generation with Gemini Pro...');
-        const geminiPayload = { ...payload, model: 'gemini-3.6-flash' };
-        
+        const geminiContents = payload.messages.filter((m: any) => m.role !== 'system').map((m: any) => {
+          let parts = [];
+          if (Array.isArray(m.content)) {
+            parts = m.content.map((c: any) => {
+              if (c.type === 'text') return { text: c.text };
+              if (c.type === 'image_url') {
+                const url = c.image_url.url;
+                const mimeType = url.substring(url.indexOf(':') + 1, url.indexOf(';'));
+                const data = url.substring(url.indexOf(',') + 1);
+                return { inlineData: { mimeType, data } };
+              }
+            });
+          } else {
+            parts = [{ text: m.content }];
+          }
+          return { role: m.role, parts };
+        });
+
+        const systemMsg = payload.messages.find((m: any) => m.role === 'system');
+        const systemInstruction = systemMsg ? { parts: [{ text: systemMsg.content }] } : undefined;
+
+        const nativePayload: any = {
+          contents: geminiContents,
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        };
+        if (systemInstruction) nativePayload.systemInstruction = systemInstruction;
+
         let res;
         for (let attempt = 1; attempt <= 3; attempt++) {
-          res = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+          res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${geminiKey}`
+              'Content-Type': 'application/json'
             },
-            body: JSON.stringify(geminiPayload)
+            body: JSON.stringify(nativePayload),
+            signal: AbortSignal.timeout(10000)
           });
 
           if (res.ok) break;
@@ -49,7 +76,7 @@ export class AiService {
 
         if (res && res.ok) {
           const data = await res.json();
-          const text = data.choices?.[0]?.message?.content;
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) {
             this.logger.log('✅ SUCCESS: AI request fulfilled by GEMINI PRO');
             const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -68,7 +95,7 @@ export class AiService {
     if (openRouterKey) {
       try {
         this.logger.log('Attempting AI generation with OpenRouter Fallback...');
-        const orPayload = { ...payload, model: 'google/gemini-3.6-flash', max_tokens: 1900 };
+        const orPayload = { ...payload, model: 'deepseek/deepseek-v4-flash-0731:free' };
         
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
@@ -452,6 +479,7 @@ IMPORTANT RULES:
 - YOUR RECOMMENDATIONS MUST BE STRICTLY AND EXPLICITLY BASED ON THE USER'S OVERALL "SKIN HEALTH SCORE" AND THE DETAILED "METRICS" PROVIDED.
 - For Products, act as a knowledgeable skincare expert and recommend REAL, popular, and affordable products from trendy Indian brands (e.g., Dot & Key, Hyphen, Pilgrim, Minimalist, Plum).
 - Include the actual brand name, product name, and an estimated price in INR (e.g., "₹450"). Do NOT include URLs or stock info.
+- EXTREME TOKEN LIMIT: You MUST output exactly 3 product recommendations, exactly 1 home remedy, exactly 2 diet tips, and exactly 2 lifestyle tips. Any more will cause a crash.
 - Return ONLY valid JSON matching this exact structure, but filled with ACTUAL personalized recommendations for the user:
 
 {
@@ -480,11 +508,18 @@ IMPORTANT RULES:
   ]
 }`;
 
+    const minimalProfile = { age: context.profile.age, gender: context.profile.gender, budget: context.profile.budget };
+    const minimalAnalysis = {
+      score: context.skinAnalysis.overallScore,
+      metrics: context.skinAnalysis.metrics?.map((m: any) => ({ name: m.name, status: m.status })),
+      concerns: context.skinAnalysis.concerns?.map((c: any) => ({ name: c.name, level: c.level }))
+    };
+
     const userPrompt = `User Profile:
-${JSON.stringify(context.profile, null, 2)}
+${JSON.stringify(minimalProfile)}
 
 Latest Skin Profile:
-${JSON.stringify(context.skinAnalysis, null, 2)}
+${JSON.stringify(minimalAnalysis)}
 
 Generate the personalized recommendations JSON matching the structure exactly.`;
 
