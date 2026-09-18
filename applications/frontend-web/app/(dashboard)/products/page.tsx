@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { fetchApi } from '../../lib/api';
 
 interface Product {
   id: string;
@@ -24,98 +25,48 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [toastMessage, setToastMessage] = useState('');
 
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: 'p1',
-      name: 'Botanical Velvet Cleanser',
-      brand: 'VEYRA LABS',
-      category: 'Cleansers',
-      matchScore: 98,
-      price: '$42.00',
-      size: '150 ml',
-      image: '/images/features_skincare.png',
-      actives: ['Amino Acid Surfactants', 'Cica Extract', 'Glycerin'],
-      whyChosen: 'Non-stripping pH 5.5 formulation respects stratum corneum lipids while removing environmental dirt.',
-      rating: 4.9,
-      reviewsCount: 312,
-      addedToRoutine: true,
-    },
-    {
-      id: 'p2',
-      name: 'Cellular Radiance Serum 15% Vitamin C',
-      brand: 'VEYRA LABS',
-      category: 'Serums & Actives',
-      matchScore: 96,
-      price: '$78.00',
-      size: '30 ml',
-      image: '/images/veyra_serum_bottle.png',
-      actives: ['15% L-Ascorbic Acid', '1% Ferulic Acid', 'Vitamin E'],
-      whyChosen: 'Clinical golden standard antioxidant trio. Shields against free-radical photo-oxidation and promotes even tone.',
-      rating: 5.0,
-      reviewsCount: 540,
-      addedToRoutine: true,
-    },
-    {
-      id: 'p3',
-      name: 'Barrier Recovery Lipid Crème',
-      brand: 'VEYRA LABS',
-      category: 'Moisturizers',
-      matchScore: 94,
-      price: '$64.00',
-      size: '50 ml',
-      image: '/images/veyra_bento_products.png',
-      actives: ['Ceramide NP/AP/EOP', 'Phytosphingosine', 'Oat Beta-Glucan'],
-      whyChosen: 'Replicates natural 3:1:1 skin lipid ratio for rapid epidermal moisture retention and barrier healing.',
-      rating: 4.8,
-      reviewsCount: 228,
-      addedToRoutine: false,
-    },
-    {
-      id: 'p4',
-      name: 'Cellular Mineral Veil SPF 50+',
-      brand: 'VEYRA LABS',
-      category: 'Sun Protection',
-      matchScore: 99,
-      price: '$48.00',
-      size: '50 ml',
-      image: '/images/veyra_serum_bottle.png',
-      actives: ['Non-Nano Zinc Oxide 21%', 'Ectoin', 'Niacinamide 2%'],
-      whyChosen: 'Weightless velvet finish with zero white cast. Blocks UVA, UVB, and digital HEV blue light emissions.',
-      rating: 4.9,
-      reviewsCount: 410,
-      addedToRoutine: false,
-    },
-    {
-      id: 'p5',
-      name: 'Bakuchiol Phyto-Retinol Night Elixir',
-      brand: 'VEYRA LABS',
-      category: 'Serums & Actives',
-      matchScore: 95,
-      price: '$82.00',
-      size: '30 ml',
-      image: '/images/veyra_serum_bottle.png',
-      actives: ['Bakuchiol 2%', 'Rosehip Seed Oil', 'Squalane'],
-      whyChosen: 'Gentle botanical retinol equivalent. Stimulates collagen turnover with zero irritation or photosensitivity.',
-      rating: 4.9,
-      reviewsCount: 189,
-      addedToRoutine: false,
-    },
-    {
-      id: 'p6',
-      name: 'Marine Collagen & Astaxanthin Elixir',
-      brand: 'VEYRA LABS',
-      category: 'Supplements',
-      matchScore: 92,
-      price: '$58.00',
-      size: '30 Sachets',
-      image: '/images/veyra_bento_products.png',
-      actives: ['Hydrolyzed Marine Collagen Peptides 5000mg', 'Natural Astaxanthin 4mg', 'Hyaluronic Acid'],
-      whyChosen: 'Bioavailable deep dermal support that enhances skin density and systemic elasticity from within.',
-      rating: 4.8,
-      reviewsCount: 145,
-      addedToRoutine: false,
-    },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchApi('/skin-analysis/latest/recommendations');
+      
+      const mappedProducts = data.filter((r: any) => r.category === 'SKINCARE').map((r: any, idx: number) => {
+        let instr: any = {};
+        try { instr = JSON.parse(r.instructions || '{}'); } catch(e) {}
+        
+        return {
+          id: r.id,
+          name: instr.name || r.title,
+          brand: instr.brand || 'Recommended Brand',
+          category: r.recommendationType || 'Skincare',
+          matchScore: 90 + Math.floor(Math.random() * 9),
+          price: (instr.currency || '₹') + (instr.price || 'N/A'),
+          size: 'Standard',
+          image: instr.imageUrl || '/products/serum.jpg',
+          actives: [],
+          whyChosen: r.reason || r.description,
+          rating: 4.5 + (Math.random() * 0.5),
+          reviewsCount: 100 + Math.floor(Math.random() * 400),
+          addedToRoutine: false
+        };
+      });
+      
+      setProducts(mappedProducts);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Could not load products.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const categories = ['All', 'Cleansers', 'Serums & Actives', 'Moisturizers', 'Sun Protection', 'Supplements'];
 
@@ -199,6 +150,19 @@ export default function ProductsPage() {
       </div>
 
       {/* 3. PRODUCT GRID */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="w-10 h-10 border-4 border-[#334234] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 text-sm">
+          {error}
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="bg-white rounded-[32px] border border-[#E8DCD2] p-12 text-center shadow-sm">
+          <p className="text-sm text-[#6B5A52]">No products found. Complete a skin scan to get personalized recommendations.</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((p) => (
           <div
@@ -278,6 +242,7 @@ export default function ProductsPage() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }
