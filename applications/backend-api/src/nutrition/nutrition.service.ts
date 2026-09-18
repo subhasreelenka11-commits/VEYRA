@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { PrismaService } from '../prisma/prisma.service';
 import { NutritionCalculator } from './nutrition.calculator';
 import { AiService } from '../ai/ai.service';
-import { UserProfile, NutritionPlan } from '@prisma/client';
+import { UserProfile, NutritionPlan } from '../generated/client';
 
 @Injectable()
 export class NutritionService {

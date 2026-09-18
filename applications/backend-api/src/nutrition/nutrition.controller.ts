@@ -1,7 +1,7 @@
 import { Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { NutritionService } from './nutrition.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { NutritionPlan } from '@prisma/client';
+import { NutritionPlan } from '../generated/client';
 
 @Controller('nutrition')
 @UseGuards(JwtAuthGuard)

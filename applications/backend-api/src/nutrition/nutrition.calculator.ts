@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ActivityLevel, Goal } from '@prisma/client';
+import { ActivityLevel, Goal } from '../generated/client';
 
 export interface NutritionTargets {
   bmi: number;

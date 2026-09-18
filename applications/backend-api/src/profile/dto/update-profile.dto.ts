@@ -8,7 +8,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { ActivityLevel, Goal, DietaryPreference } from '@prisma/client';
+import { ActivityLevel, Goal, DietaryPreference } from '../../generated/client';
 
 export class UpdateProfileDto {
   @IsOptional()
