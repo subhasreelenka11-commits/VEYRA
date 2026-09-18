@@ -2,13 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module';
-import * as express from 'express';
-import * as cookieParser from 'cookie-parser';
+import express from 'express';
+import cookieParser from 'cookie-parser';
 
 const server = express();
-let cachedApp = null;
+let cachedApp: any = null;
 
-export const createNestServer = async (expressInstance) => {
+export const createNestServer = async (expressInstance: any) => {
   if (!cachedApp) {
     const app = await NestFactory.create(
       AppModule,
@@ -40,7 +40,7 @@ export const createNestServer = async (expressInstance) => {
   return cachedApp;
 };
 
-export default async (req, res) => {
+export default async (req: any, res: any) => {
   await createNestServer(server);
   server(req, res);
 };
